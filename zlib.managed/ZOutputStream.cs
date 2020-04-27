@@ -19,6 +19,7 @@ namespace Elskom.Generic.Libs
     {
         private byte[] pBuf;
         private byte[] pBuf1 = new byte[1];
+        private bool isDisposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ZOutputStream"/> class.
@@ -239,27 +240,6 @@ namespace Elskom.Generic.Libs
         }
 
         /// <inheritdoc/>
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This method should not throw any exceptions.")]
-        public override void Close()
-        {
-            try
-            {
-                try
-                {
-                    this.Finish();
-                }
-                catch (Exception)
-                {
-                }
-            }
-            finally
-            {
-                this.EndStream();
-                this.BaseStream.Close();
-            }
-        }
-
-        /// <inheritdoc/>
         public override void Flush() => this.BaseStream.Flush();
 
         /// <inheritdoc/>
@@ -270,6 +250,34 @@ namespace Elskom.Generic.Libs
 
         /// <inheritdoc/>
         public override void SetLength(long value) => throw new NotImplementedException();
+
+        /// <inheritdoc/>
+        protected override void Dispose(bool disposing)
+        {
+            if (!this.isDisposed)
+            {
+                if (disposing)
+                {
+                    try
+                    {
+                        try
+                        {
+                            this.Finish();
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    finally
+                    {
+                        this.EndStream();
+                    }
+                }
+
+                this.isDisposed = true;
+                base.Dispose(disposing);
+            }
+        }
 
         private void InitBlock()
         {
