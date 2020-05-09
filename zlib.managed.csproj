@@ -75,7 +75,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="!Exists('..\GitInformation\src\GitInformation\AraHaan.GitInformation.csproj') OR '$(SolutionName)' != 'build_all_packages'">
-    <PackageReference Include="AraHaan.GitInformation" Version="1.0.2-preview-97992797" />
+    <PackageReference Include="AraHaan.GitInformation" Version="1.0.2-preview-98929471" />
   </ItemGroup>
 
   <Target Name="GitBuildInfo" BeforeTargets="PrepareForBuild">
