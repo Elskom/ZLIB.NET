@@ -63,7 +63,7 @@
     <PackageReference Include="GitBuildInfo" Version="0.25.0-preview-99680043" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.164" PrivateAssets="All" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.2" IncludeAssets="runtime; build; native; contentfiles; analyzers" PrivateAssets="all" />
-    <PackageReference Include="IDisposableAnalyzers" Version="3.4.5" IncludeAssets="runtime; build; native; contentfiles; analyzers" PrivateAssets="all" />
+    <PackageReference Include="IDisposableAnalyzers" Version="3.4.8" IncludeAssets="runtime; build; native; contentfiles; analyzers" PrivateAssets="all" />
     <PackageReference Include="System.Runtime" Condition="!$(TargetFramework.StartsWith('net4'))" Version="4.3.1" />
     <PackageReference Include="System.Runtime.Extensions" Condition="!$(TargetFramework.StartsWith('net4'))" Version="4.3.1" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.0-beta-20628-02" PrivateAssets="All" />
