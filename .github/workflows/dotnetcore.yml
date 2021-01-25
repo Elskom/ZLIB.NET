@@ -4,9 +4,7 @@ on: [pull_request]
 
 jobs:
   build:
-
     runs-on: windows-latest
-
     steps:
     # clone the parent repository.
     - uses: actions/checkout@v2
@@ -31,12 +29,12 @@ jobs:
         dotnet build --configuration Release
     # auto approve pull request if from repository admins or even dependabot.
     - uses: hmarr/auto-approve-action@v2.0.0
-      if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]' || github.actor == 'AraHaan' || github.actor == 'CatGirlsAreLife' || github.actor == 'Raitou' || github.actor == 'JunichiSama' || github.actor == 'xioke'
+      if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]' || github.actor == 'AraHaan' || github.actor == 'CatGirlsAreLife' || github.actor == 'Raitou' || github.actor == 'JunichiSama' || github.actor == 'xioke' || github.actor == 'Elskom-gitsync'
       with:
         github-token: "${{ secrets.GITHUB_TOKEN }}"
     - uses: actions-ecosystem/action-add-labels@v1
-      if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]' || github.actor == 'AraHaan' || github.actor == 'CatGirlsAreLife' || github.actor == 'Raitou' || github.actor == 'JunichiSama' || github.actor == 'xioke'
+      if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]' || github.actor == 'AraHaan' || github.actor == 'CatGirlsAreLife' || github.actor == 'Raitou' || github.actor == 'JunichiSama' || github.actor == 'xioke' || github.actor == 'Elskom-gitsync'
       with:
-        github_token: ${{ secrets.github_token }}
+        github_token: ${{ secrets.GITSYNC_TOKEN }}
         labels: |
           automerge
