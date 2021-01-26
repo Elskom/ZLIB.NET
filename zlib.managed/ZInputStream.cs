@@ -6,10 +6,7 @@
 namespace Elskom.Generic.Libs
 {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.IO;
-    using System.Linq;
 
     /// <summary>
     /// Class that provices a zlib input stream that supports
@@ -17,8 +14,8 @@ namespace Elskom.Generic.Libs
     /// </summary>
     public class ZInputStream : Stream
     {
+        private readonly byte[] pBuf1 = new byte[1];
         private byte[] pBuf;
-        private byte[] pBuf1 = new byte[1];
         private bool isDisposed;
 
         /// <summary>
@@ -108,17 +105,6 @@ namespace Elskom.Generic.Libs
         protected int Bufsize { get; private set; } = 512;
 
         /// <summary>
-        /// Gets the stream's buffer.
-        /// </summary>
-        protected List<byte> Buf => this.pBuf.ToList();
-
-        /// <summary>
-        /// Gets the stream's single byte buffer value.
-        /// For reading 1 byte at a time.
-        /// </summary>
-        protected List<byte> Buf1 => this.pBuf1.ToList();
-
-        /// <summary>
         /// Gets a value indicating whether this stream is setup for compression.
         /// </summary>
         protected bool Compress { get; private set; }
@@ -128,17 +114,17 @@ namespace Elskom.Generic.Libs
             => this.Read(this.pBuf1, 0, 1) == -1 ? -1 : this.pBuf1[0] & 0xFF;
 
         /// <inheritdoc/>
-        public override int Read(byte[] b, int off, int len)
+        public override int Read(byte[] buffer, int offset, int count)
         {
-            if (len == 0)
+            if (count == 0)
             {
                 return 0;
             }
 
             ZlibCompressionState err;
-            this.Z.INextOut = b;
-            this.Z.NextOutIndex = off;
-            this.Z.AvailOut = len;
+            this.Z.INextOut = buffer;
+            this.Z.NextOutIndex = offset;
+            this.Z.AvailOut = count;
             do
             {
                 if (this.Z.AvailIn == 0 && !this.Moreinput)
@@ -164,14 +150,14 @@ namespace Elskom.Generic.Libs
                     throw new ZStreamException((this.Compress ? "de" : "in") + "flating: " + this.Z.Msg);
                 }
 
-                if (this.Moreinput && this.Z.AvailOut == len)
+                if (this.Moreinput && this.Z.AvailOut == count)
                 {
                     return -1;
                 }
             }
             while (this.Z.AvailOut > 0 && err == ZlibCompressionState.ZOK);
 
-            return len - this.Z.AvailOut;
+            return count - this.Z.AvailOut;
         }
 
         /// <summary>
@@ -256,6 +242,21 @@ namespace Elskom.Generic.Libs
         public override void Write(byte[] buffer, int offset, int count)
             => throw new NotImplementedException();
 
+        /// <summary>
+        /// Gets the stream's buffer.
+        /// </summary>
+        /// <returns>The stream's buffer.</returns>
+        protected byte[] GetBuf()
+            => this.pBuf;
+
+        /// <summary>
+        /// Gets the stream's single byte buffer value.
+        /// For reading 1 byte at a time.
+        /// </summary>
+        /// <returns>The stream's single byte buffer value.</returns>
+        protected byte[] GetBuf1()
+            => this.pBuf1;
+
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
@@ -271,6 +272,7 @@ namespace Elskom.Generic.Libs
                         }
                         catch
                         {
+                            // Dispose should always never throw exceptions.
                         }
                     }
                     finally

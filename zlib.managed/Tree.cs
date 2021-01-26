@@ -120,9 +120,6 @@ namespace Elskom.Generic.Libs
         };
 
         private const int MAXBITS = 15;
-
-        // private const int BLCODES = 19;
-        // private const int DCODES = 30;
         private const int LITERALS = 256;
         private const int LENGTHCODES = 29;
         private const int LCODES = LITERALS + 1 + LENGTHCODES;
@@ -162,9 +159,6 @@ namespace Elskom.Generic.Libs
 
             // Check that the bit counts in bl_count are consistent. The last code
             // must be all ones.
-            // Assert (code + bl_count[MAX_BITS]-1 == (1<<MAX_BITS)-1,
-            //        "inconsistent bit counts");
-            // Tracev((stderr,"\ngen_codes: max_code %d ", max_code));
             for (n = 0; n <= max_code; n++)
             {
                 int len = tree[(n * 2) + 1];

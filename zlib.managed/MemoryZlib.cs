@@ -307,8 +307,8 @@ namespace Elskom.Generic.Libs
             }
 
             var data = new byte[2];
-            stream.Read(data, 0, 2);
-            stream.Seek(-2, SeekOrigin.Current);
+            _ = stream.Read(data, 0, 2);
+            _ = stream.Seek(-2, SeekOrigin.Current);
             return IsCompressedByZlib(data);
         }
 
@@ -328,26 +328,8 @@ namespace Elskom.Generic.Libs
         /// <returns>Returns <see langword="true" /> if data is compressed by zlib, else <see langword="false" />.</returns>
         /// <exception cref="ArgumentNullException">When <paramref name="data"/> is <see langword="null" />.</exception>
         public static bool IsCompressedByZlib(byte[] data)
-        {
-            if (data == null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
-
-            if (data.Length < 2)
-            {
-                return false;
-            }
-
-            if (data[0] == 0x78)
-            {
-                if (data[1] == 0x01 || data[1] == 0x5E || data[1] == 0x9C || data[1] == 0xDA)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
+            => data == null
+            ? throw new ArgumentNullException(nameof(data))
+            : data.Length >= 2 && data[0] == 0x78 && (data[1] == 0x01 || data[1] == 0x5E || data[1] == 0x9C || data[1] == 0xDA);
     }
 }

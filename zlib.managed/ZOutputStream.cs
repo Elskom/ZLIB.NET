@@ -6,10 +6,7 @@
 namespace Elskom.Generic.Libs
 {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.IO;
-    using System.Linq;
 
     /// <summary>
     /// Class that provices a zlib output stream that supports
@@ -18,8 +15,8 @@ namespace Elskom.Generic.Libs
     public class ZOutputStream : Stream
     {
         private readonly bool keepOpen;
+        private readonly byte[] pBuf1 = new byte[1];
         private byte[] pBuf;
-        private byte[] pBuf1 = new byte[1];
         private bool isDisposed;
 
         /// <summary>
@@ -113,23 +110,6 @@ namespace Elskom.Generic.Libs
         protected internal int Bufsize { get; private set; } = 4096;
 
         /// <summary>
-        /// Gets the stream's buffer.
-        ///
-        /// Result returned as a list to prevent any compile warnings when
-        /// compiling this library from source.
-        /// </summary>
-        protected internal List<byte> Buf => this.pBuf.ToList();
-
-        /// <summary>
-        /// Gets the stream's single byte buffer value.
-        /// For reading 1 byte at a time.
-        ///
-        /// Result returned as a list to prevent any compile warnings when
-        /// compiling this library from source.
-        /// </summary>
-        protected internal List<byte> Buf1 => this.pBuf1.ToList();
-
-        /// <summary>
         /// Gets a value indicating whether this stream is setup for compression.
         /// </summary>
         protected internal bool Compress { get; private set; }
@@ -161,24 +141,24 @@ namespace Elskom.Generic.Libs
         }
 
         /// <inheritdoc/>
-        public override void Write(byte[] b1, int off, int len)
+        public override void Write(byte[] buffer, int offset, int count)
         {
-            if (b1 == null)
+            if (buffer == null)
             {
-                throw new ArgumentNullException(nameof(b1));
+                throw new ArgumentNullException(nameof(buffer));
             }
 
-            if (len == 0)
+            if (count == 0)
             {
                 return;
             }
 
             ZlibCompressionState err;
-            var b = new byte[b1.Length];
-            Array.Copy(b1, 0, b, 0, b1.Length);
+            var b = new byte[buffer.Length];
+            Array.Copy(buffer, 0, b, 0, buffer.Length);
             this.Z.INextIn = b;
-            this.Z.NextInIndex = off;
-            this.Z.AvailIn = len;
+            this.Z.NextInIndex = offset;
+            this.Z.AvailIn = count;
             do
             {
                 this.Z.INextOut = this.pBuf;
@@ -207,7 +187,6 @@ namespace Elskom.Generic.Libs
         /// <summary>
         /// Finishes the stream.
         /// </summary>
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This method should not throw any exceptions.")]
         public virtual void Finish()
         {
             if (!this.IsFinished)
@@ -239,7 +218,7 @@ namespace Elskom.Generic.Libs
                 {
                     this.Flush();
                 }
-                catch (Exception)
+                catch
                 {
                     // ensure no throws on this.
                 }
@@ -274,8 +253,22 @@ namespace Elskom.Generic.Libs
         public override void SetLength(long value)
             => throw new NotImplementedException();
 
+        /// <summary>
+        /// Gets the stream's buffer.
+        /// </summary>
+        /// <returns>The stream's buffer.</returns>
+        protected internal byte[] GetBuf()
+            => this.pBuf;
+
+        /// <summary>
+        /// Gets the stream's single byte buffer value.
+        /// For reading 1 byte at a time.
+        /// </summary>
+        /// <returns>The stream's single byte buffer value.</returns>
+        protected internal byte[] GetBuf1()
+            => this.pBuf1;
+
         /// <inheritdoc/>
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This method should not throw any exceptions.")]
         protected override void Dispose(bool disposing)
         {
             if (!this.isDisposed)
@@ -288,7 +281,7 @@ namespace Elskom.Generic.Libs
                         {
                             this.Finish();
                         }
-                        catch (Exception)
+                        catch
                         {
                             // should never throw.
                         }

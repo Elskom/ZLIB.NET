@@ -6,9 +6,7 @@
 namespace Elskom.Generic.Libs
 {
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
 
     /// <summary>
     /// The zlib stream class.
@@ -21,11 +19,6 @@ namespace Elskom.Generic.Libs
         internal byte[] INextOut;
         private const int MAXWBITS = 15; // 32K LZ77 window
         private const int DEFWBITS = MAXWBITS;
-
-        /// <summary>
-        /// Gets the next input byte.
-        /// </summary>
-        public List<byte> NextIn => this.INextIn.ToList();
 
         /// <summary>
         /// Gets or sets the next input byte index.
@@ -41,11 +34,6 @@ namespace Elskom.Generic.Libs
         /// Gets or sets the total number of input bytes read so far.
         /// </summary>
         public long TotalIn { get; set; }
-
-        /// <summary>
-        /// Gets the next output byte.
-        /// </summary>
-        public List<byte> NextOut => this.INextOut.ToList();
 
         /// <summary>
         /// Gets or sets the next output byte index.
@@ -86,6 +74,20 @@ namespace Elskom.Generic.Libs
         /// Gets or sets the data type to this instance of this class.
         /// </summary>
         internal int DataType { get; set; } // best guess about the data type: ascii or binary
+
+        /// <summary>
+        /// Gets the next input byte.
+        /// </summary>
+        /// <returns>The next input byte.</returns>
+        public byte[] GetNextIn()
+            => this.INextIn;
+
+        /// <summary>
+        /// Gets the next output byte.
+        /// </summary>
+        /// <returns>The next output byte.</returns>
+        public byte[] GetNextOut()
+            => this.INextOut;
 
         /// <summary>
         /// Initializes decompression.
