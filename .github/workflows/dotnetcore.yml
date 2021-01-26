@@ -37,4 +37,5 @@ jobs:
       with:
         github_token: ${{ secrets.GITSYNC_TOKEN }}
         labels: |
+          enhancement
           automerge

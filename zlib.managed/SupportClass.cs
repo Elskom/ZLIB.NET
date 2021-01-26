@@ -19,28 +19,32 @@ namespace Elskom.Generic.Libs
         /// </summary>
         /// <param name="literal">The literal to return.</param>
         /// <returns>The received value.</returns>
-        public static long Identity(long literal) => literal;
+        public static long Identity(long literal)
+            => literal;
 
         /// <summary>
         /// This method returns the literal value received.
         /// </summary>
         /// <param name="literal">The literal to return.</param>
         /// <returns>The received value.</returns>
-        public static ulong Identity(ulong literal) => literal;
+        public static ulong Identity(ulong literal)
+            => literal;
 
         /// <summary>
         /// This method returns the literal value received.
         /// </summary>
         /// <param name="literal">The literal to return.</param>
         /// <returns>The received value.</returns>
-        public static float Identity(float literal) => literal;
+        public static float Identity(float literal)
+            => literal;
 
         /// <summary>
         /// This method returns the literal value received.
         /// </summary>
         /// <param name="literal">The literal to return.</param>
         /// <returns>The received value.</returns>
-        public static double Identity(double literal) => literal;
+        public static double Identity(double literal)
+            => literal;
 
         /*******************************/
 
@@ -50,7 +54,8 @@ namespace Elskom.Generic.Libs
         /// <param name="number">Number to operate on.</param>
         /// <param name="bits">Ammount of bits to shift.</param>
         /// <returns>The resulting number from the shift operation.</returns>
-        public static int URShift(int number, int bits) => number >= 0 ? number >> bits : (number >> bits) + (2 << ~bits);
+        public static int URShift(int number, int bits)
+            => number >= 0 ? number >> bits : (number >> bits) + (2 << ~bits);
 
         /// <summary>
         /// Performs an unsigned bitwise right shift with the specified number.
@@ -58,7 +63,8 @@ namespace Elskom.Generic.Libs
         /// <param name="number">Number to operate on.</param>
         /// <param name="bits">Ammount of bits to shift.</param>
         /// <returns>The resulting number from the shift operation.</returns>
-        public static int URShift(int number, long bits) => URShift(number, (int)bits);
+        public static int URShift(int number, long bits)
+            => URShift(number, (int)bits);
 
         /// <summary>
         /// Performs an unsigned bitwise right shift with the specified number.
@@ -66,7 +72,8 @@ namespace Elskom.Generic.Libs
         /// <param name="number">Number to operate on.</param>
         /// <param name="bits">Ammount of bits to shift.</param>
         /// <returns>The resulting number from the shift operation.</returns>
-        public static long URShift(long number, int bits) => number >= 0 ? number >> bits : (number >> bits) + (2L << ~bits);
+        public static long URShift(long number, int bits)
+            => number >= 0 ? number >> bits : (number >> bits) + (2L << ~bits);
 
         /// <summary>
         /// Performs an unsigned bitwise right shift with the specified number.
@@ -74,7 +81,8 @@ namespace Elskom.Generic.Libs
         /// <param name="number">Number to operate on.</param>
         /// <param name="bits">Ammount of bits to shift.</param>
         /// <returns>The resulting number from the shift operation.</returns>
-        public static long URShift(long number, long bits) => URShift(number, (int)bits);
+        public static long URShift(long number, long bits)
+            => URShift(number, (int)bits);
 
         /*******************************/
 
@@ -167,13 +175,15 @@ namespace Elskom.Generic.Libs
         /// </summary>
         /// <param name="sourceString">The string to be converted.</param>
         /// <returns>The new array of bytes.</returns>
-        public static byte[] ToByteArray(string sourceString) => Encoding.UTF8.GetBytes(sourceString);
+        public static byte[] ToByteArray(string sourceString)
+            => Encoding.UTF8.GetBytes(sourceString);
 
         /// <summary>
         /// Converts an array of bytes to an array of chars.
         /// </summary>
         /// <param name="byteArray">The array of bytes to convert.</param>
         /// <returns>The new array of chars.</returns>
-        public static char[] ToCharArray(byte[] byteArray) => Encoding.UTF8.GetChars(byteArray);
+        public static char[] ToCharArray(byte[] byteArray)
+            => Encoding.UTF8.GetChars(byteArray);
     }
 }

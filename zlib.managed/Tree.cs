@@ -137,7 +137,8 @@ namespace Elskom.Generic.Libs
         // Mapping from a distance to a distance code. dist is the distance - 1 and
         // must not have side effects. _dist_code[256] and _dist_code[257] are never
         // used.
-        internal static int D_code(int dist) => dist < 256 ? DistCode[dist] : DistCode[256 + SupportClass.URShift(dist, 7)];
+        internal static int D_code(int dist)
+            => dist < 256 ? DistCode[dist] : DistCode[256 + SupportClass.URShift(dist, 7)];
 
         // Generate the codes for a given tree and bit counts (which need not be
         // optimal).
@@ -190,6 +191,7 @@ namespace Elskom.Generic.Libs
                 res <<= 1;
             }
             while (--len > 0);
+
             return SupportClass.URShift(res, 1);
         }
 
@@ -214,7 +216,6 @@ namespace Elskom.Generic.Libs
             int xbits; // extra bits
             short f; // frequency
             var overflow = 0; // number of elements with bit length too large
-
             for (bits = 0; bits <= MAXBITS; bits++)
             {
                 s.BlCount[bits] = 0;
@@ -223,7 +224,6 @@ namespace Elskom.Generic.Libs
             // In a first pass, compute the optimal bit lengths (which may
             // overflow in the case of the bit length tree).
             tree[(s.Heap[s.HeapMax] * 2) + 1] = 0; // root of the heap
-
             for (h = s.HeapMax + 1; h < HEAPSIZE; h++)
             {
                 n = s.Heap[h];
@@ -324,7 +324,6 @@ namespace Elskom.Generic.Libs
             // heap[0] is not used.
             s.HeapLen = 0;
             s.HeapMax = HEAPSIZE;
-
             for (n = 0; n < elems; n++)
             {
                 if (tree[n * 2] != 0)
@@ -375,7 +374,6 @@ namespace Elskom.Generic.Libs
                 s.Heap[1] = s.Heap[s.HeapLen--];
                 s.Pqdownheap(tree, 1);
                 m = s.Heap[1]; // m = node of next least frequency
-
                 s.Heap[--s.HeapMax] = n; // keep the nodes sorted by frequency
                 s.Heap[--s.HeapMax] = m;
 

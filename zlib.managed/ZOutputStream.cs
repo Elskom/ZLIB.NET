@@ -135,7 +135,8 @@ namespace Elskom.Generic.Libs
         protected internal bool Compress { get; private set; }
 
         /// <inheritdoc/>
-        public override void WriteByte(byte value) => this.WriteByte(value);
+        public override void WriteByte(byte value)
+            => this.WriteByte(value);
 
         /// <summary>
         /// Writes a byte to the current position in the stream and advances the position
@@ -184,7 +185,6 @@ namespace Elskom.Generic.Libs
                 this.Z.NextOutIndex = 0;
                 this.Z.AvailOut = this.Bufsize;
                 err = this.Compress ? this.Z.Deflate(this.FlushMode) : this.Z.Inflate(this.FlushMode);
-
                 if (err != ZlibCompressionState.ZOK && err != ZlibCompressionState.ZSTREAMEND)
                 {
                     throw new ZStreamException((this.Compress ? "de" : "in") + "flating: " + this.Z.Msg);
@@ -219,7 +219,6 @@ namespace Elskom.Generic.Libs
                     this.Z.NextOutIndex = 0;
                     this.Z.AvailOut = this.Bufsize;
                     err = this.Compress ? this.Z.Deflate(ZlibFlushStrategy.ZFINISH) : this.Z.Inflate(ZlibFlushStrategy.ZFINISH);
-
                     if (err != ZlibCompressionState.ZSTREAMEND && err != ZlibCompressionState.ZOK)
                     {
                         throw new ZStreamException((this.Compress ? "de" : "in") + "flating: " + this.Z.Msg);
@@ -255,22 +254,25 @@ namespace Elskom.Generic.Libs
         public virtual void EndStream()
         {
             _ = this.Compress ? this.Z.DeflateEnd() : this.Z.InflateEnd();
-
             this.Z.Free();
             this.Z = null;
         }
 
         /// <inheritdoc/>
-        public override void Flush() => this.BaseStream.Flush();
+        public override void Flush()
+            => this.BaseStream.Flush();
 
         /// <inheritdoc/>
-        public override int Read(byte[] buffer, int offset, int count) => 0;
+        public override int Read(byte[] buffer, int offset, int count)
+            => 0;
 
         /// <inheritdoc/>
-        public override long Seek(long offset, SeekOrigin origin) => 0;
+        public override long Seek(long offset, SeekOrigin origin)
+            => 0;
 
         /// <inheritdoc/>
-        public override void SetLength(long value) => throw new NotImplementedException();
+        public override void SetLength(long value)
+            => throw new NotImplementedException();
 
         /// <inheritdoc/>
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This method should not throw any exceptions.")]

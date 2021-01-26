@@ -91,7 +91,8 @@ namespace Elskom.Generic.Libs
         /// Initializes decompression.
         /// </summary>
         /// <returns>The state.</returns>
-        public ZlibCompressionState InflateInit() => this.InflateInit(DEFWBITS);
+        public ZlibCompressionState InflateInit()
+            => this.InflateInit(DEFWBITS);
 
         /// <summary>
         /// Initializes decompression.
@@ -109,7 +110,8 @@ namespace Elskom.Generic.Libs
         /// </summary>
         /// <param name="f">The flush mode to use.</param>
         /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState Inflate(ZlibFlushStrategy f) => this.Istate == null ? ZlibCompressionState.ZSTREAMERROR : Libs.Inflate.Decompress(this, f);
+        public ZlibCompressionState Inflate(ZlibFlushStrategy f)
+            => this.Istate == null ? ZlibCompressionState.ZSTREAMERROR : Libs.Inflate.Decompress(this, f);
 
         /// <summary>
         /// Ends decompression.
@@ -131,7 +133,8 @@ namespace Elskom.Generic.Libs
         /// Syncs inflate.
         /// </summary>
         /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState InflateSync() => this.Istate == null ? ZlibCompressionState.ZSTREAMERROR : Libs.Inflate.InflateSync(this);
+        public ZlibCompressionState InflateSync()
+            => this.Istate == null ? ZlibCompressionState.ZSTREAMERROR : Libs.Inflate.InflateSync(this);
 
         /// <summary>
         /// Sets the inflate dictionary.
@@ -139,14 +142,16 @@ namespace Elskom.Generic.Libs
         /// <param name="dictionary">The dictionary to use.</param>
         /// <param name="dictLength">The dictionary length.</param>
         /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState InflateSetDictionary(byte[] dictionary, int dictLength) => this.Istate == null ? ZlibCompressionState.ZSTREAMERROR : Libs.Inflate.InflateSetDictionary(this, dictionary, dictLength);
+        public ZlibCompressionState InflateSetDictionary(byte[] dictionary, int dictLength)
+            => this.Istate == null ? ZlibCompressionState.ZSTREAMERROR : Libs.Inflate.InflateSetDictionary(this, dictionary, dictLength);
 
         /// <summary>
         /// Initializes compression.
         /// </summary>
         /// <param name="level">The compression level to use.</param>
         /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState DeflateInit(ZlibCompression level) => this.DeflateInit(level, MAXWBITS);
+        public ZlibCompressionState DeflateInit(ZlibCompression level)
+            => this.DeflateInit(level, MAXWBITS);
 
         /// <summary>
         /// Initializes compression.
@@ -165,7 +170,8 @@ namespace Elskom.Generic.Libs
         /// </summary>
         /// <param name="flush">The flush mode to use on the data.</param>
         /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState Deflate(ZlibFlushStrategy flush) => this.Dstate == null ? ZlibCompressionState.ZSTREAMERROR : this.Dstate.Compress(this, flush);
+        public ZlibCompressionState Deflate(ZlibFlushStrategy flush)
+            => this.Dstate == null ? ZlibCompressionState.ZSTREAMERROR : this.Dstate.Compress(this, flush);
 
         /// <summary>
         /// Ends compression.
@@ -189,7 +195,8 @@ namespace Elskom.Generic.Libs
         /// <param name="level">The compression level to use.</param>
         /// <param name="strategy">The strategy to use for compression.</param>
         /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState DeflateParams(ZlibCompression level, ZlibCompressionStrategy strategy) => this.Dstate == null ? ZlibCompressionState.ZSTREAMERROR : this.Dstate.DeflateParams(this, level, strategy);
+        public ZlibCompressionState DeflateParams(ZlibCompression level, ZlibCompressionStrategy strategy)
+            => this.Dstate == null ? ZlibCompressionState.ZSTREAMERROR : this.Dstate.DeflateParams(this, level, strategy);
 
         /// <summary>
         /// Sets the deflate dictionary.
@@ -197,7 +204,8 @@ namespace Elskom.Generic.Libs
         /// <param name="dictionary">The dictionary to use.</param>
         /// <param name="dictLength">The dictionary length.</param>
         /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState DeflateSetDictionary(byte[] dictionary, int dictLength) => this.Dstate == null ? ZlibCompressionState.ZSTREAMERROR : this.Dstate.DeflateSetDictionary(this, dictionary, dictLength);
+        public ZlibCompressionState DeflateSetDictionary(byte[] dictionary, int dictLength)
+            => this.Dstate == null ? ZlibCompressionState.ZSTREAMERROR : this.Dstate.DeflateSetDictionary(this, dictionary, dictLength);
 
         /// <summary>
         /// Frees everything.
@@ -216,7 +224,6 @@ namespace Elskom.Generic.Libs
         internal void Flush_pending()
         {
             var len = this.Dstate.Pending;
-
             if (len > this.AvailOut)
             {
                 len = this.AvailOut;
@@ -227,14 +234,7 @@ namespace Elskom.Generic.Libs
                 return;
             }
 
-            if (this.Dstate.PendingBuf.Length <= this.Dstate.PendingOut || this.INextOut.Length <= this.NextOutIndex || this.Dstate.PendingBuf.Length < this.Dstate.PendingOut + len || this.INextOut.Length < this.NextOutIndex + len)
-            {
-                // System.Console.Out.WriteLine(dstate.pending_buf.Length + ", " + dstate.pending_out + ", " + next_out.Length + ", " + next_out_index + ", " + len);
-                // System.Console.Out.WriteLine("avail_out=" + avail_out);
-            }
-
             Array.Copy(this.Dstate.PendingBuf, this.Dstate.PendingOut, this.INextOut, this.NextOutIndex, len);
-
             this.NextOutIndex += len;
             this.Dstate.PendingOut += len;
             this.TotalOut += len;
@@ -254,7 +254,6 @@ namespace Elskom.Generic.Libs
         internal int Read_buf(byte[] buf, int start, int size)
         {
             var len = this.AvailIn;
-
             if (len > size)
             {
                 len = size;
@@ -266,7 +265,6 @@ namespace Elskom.Generic.Libs
             }
 
             this.AvailIn -= len;
-
             if (this.Dstate.Noheader == 0)
             {
                 this.Adler = Adler32.Calculate(this.Adler, this.INextIn, this.NextInIndex, len);

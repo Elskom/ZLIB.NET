@@ -14,6 +14,7 @@ namespace Elskom.Generic.Libs
         /// Gets the version to zlib.net.
         /// </summary>
         /// <returns>The version string to this version of zlib.net.</returns>
-        public static string Version() => typeof(ZlibConst).Assembly.GetName().Version.ToString(3);
+        public static string Version()
+            => typeof(ZlibConst).Assembly.GetName().Version.ToString(3);
     }
 }

@@ -6,6 +6,7 @@
 namespace Elskom.Generic.Libs
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     internal sealed class InfCodes
     {
@@ -84,13 +85,14 @@ namespace Elskom.Generic.Libs
 
         internal static void Free()
         {
-            // ZFREE(z, c);
+            // nothing.
         }
 
         // Called with number of bytes left to write in window at least 258
         // (the maximum string length) and number of input bytes available
         // at least ten.  The ten bytes are six bytes for the longest length/
         // distance pair plus four bytes for overloading the bit buffer.
+        [SuppressMessage("Major Code Smell", "S1854:Unused assignments should be removed", Justification = "Needed for inflate.")]
         internal static ZlibCompressionState Inflate_fast(int bl, int bd, int[] tl, int tl_index, int[] td, int td_index, InfBlocks s, ZStream z)
         {
             int t; // temporary pointer
@@ -141,7 +143,6 @@ namespace Elskom.Generic.Libs
                 {
                     b >>= tp[((tp_index + t) * 3) + 1];
                     k -= tp[((tp_index + t) * 3) + 1];
-
                     s.Window[q++] = (byte)tp[((tp_index + t) * 3) + 2];
                     m--;
                     continue;
@@ -151,12 +152,10 @@ namespace Elskom.Generic.Libs
                 {
                     b >>= tp[((tp_index + t) * 3) + 1];
                     k -= tp[((tp_index + t) * 3) + 1];
-
                     if ((e & 16) != 0)
                     {
                         e &= 15;
                         c = tp[((tp_index + t) * 3) + 2] + (b & InflateMask[e]);
-
                         b >>= e;
                         k -= e;
 
@@ -173,12 +172,10 @@ namespace Elskom.Generic.Libs
                         tp = td;
                         tp_index = td_index;
                         e = tp[(tp_index + t) * 3];
-
                         do
                         {
                             b >>= tp[((tp_index + t) * 3) + 1];
                             k -= tp[((tp_index + t) * 3) + 1];
-
                             if ((e & 16) != 0)
                             {
                                 // get extra bits to add to distance base
@@ -192,7 +189,6 @@ namespace Elskom.Generic.Libs
                                 }
 
                                 d = tp[((tp_index + t) * 3) + 2] + (b & InflateMask[e]);
-
                                 b >>= e;
                                 k -= e;
 
@@ -227,6 +223,7 @@ namespace Elskom.Generic.Libs
                                         r += s.End; // force pointer in window
                                     }
                                     while (r < 0); // covers invalid distances
+
                                     e = s.End - r;
                                     if (c > e)
                                     {
@@ -280,24 +277,22 @@ namespace Elskom.Generic.Libs
                             else
                             {
                                 z.Msg = "invalid distance code";
-
                                 c = z.AvailIn - n;
                                 c = k >> 3 < c ? k >> 3 : c;
                                 n += c;
                                 p -= c;
                                 k -= c << 3;
-
                                 s.Bitb = b;
                                 s.Bitk = k;
                                 z.AvailIn = n;
                                 z.TotalIn += p - z.NextInIndex;
                                 z.NextInIndex = p;
                                 s.Write = q;
-
                                 return ZlibCompressionState.ZDATAERROR;
                             }
                         }
                         while (true);
+
                         break;
                     }
 
@@ -309,7 +304,6 @@ namespace Elskom.Generic.Libs
                         {
                             b >>= tp[((tp_index + t) * 3) + 1];
                             k -= tp[((tp_index + t) * 3) + 1];
-
                             s.Window[q++] = (byte)tp[((tp_index + t) * 3) + 2];
                             m--;
                             break;
@@ -322,33 +316,28 @@ namespace Elskom.Generic.Libs
                         n += c;
                         p -= c;
                         k -= c << 3;
-
                         s.Bitb = b;
                         s.Bitk = k;
                         z.AvailIn = n;
                         z.TotalIn += p - z.NextInIndex;
                         z.NextInIndex = p;
                         s.Write = q;
-
                         return ZlibCompressionState.ZSTREAMEND;
                     }
                     else
                     {
                         z.Msg = "invalid literal/length code";
-
                         c = z.AvailIn - n;
                         c = k >> 3 < c ? k >> 3 : c;
                         n += c;
                         p -= c;
                         k -= c << 3;
-
                         s.Bitb = b;
                         s.Bitk = k;
                         z.AvailIn = n;
                         z.TotalIn += p - z.NextInIndex;
                         z.NextInIndex = p;
                         s.Write = q;
-
                         return ZlibCompressionState.ZDATAERROR;
                     }
                 }
@@ -362,17 +351,16 @@ namespace Elskom.Generic.Libs
             n += c;
             p -= c;
             k -= c << 3;
-
             s.Bitb = b;
             s.Bitk = k;
             z.AvailIn = n;
             z.TotalIn += p - z.NextInIndex;
             z.NextInIndex = p;
             s.Write = q;
-
             return ZlibCompressionState.ZOK;
         }
 
+        [SuppressMessage("Major Code Smell", "S1854:Unused assignments should be removed", Justification = "Needed for inflate.")]
         internal ZlibCompressionState Proc(InfBlocks s, ZStream z, ZlibCompressionState r)
         {
             int j; // temporary storage
@@ -403,6 +391,7 @@ namespace Elskom.Generic.Libs
                 {
                     // waiting for "i:"=input, "o:"=output, "x:"=nothing
                     case START: // x: set up for LEN
+                    {
                         if (m >= 258 && n >= 10)
                         {
                             s.Bitb = b;
@@ -412,14 +401,12 @@ namespace Elskom.Generic.Libs
                             z.NextInIndex = p;
                             s.Write = q;
                             r = Inflate_fast(this.Lbits, this.Dbits, this.Ltree, this.LtreeIndex, this.Dtree, this.DtreeIndex, s, z);
-
                             p = z.NextInIndex;
                             n = z.AvailIn;
                             b = s.Bitb;
                             k = s.Bitk;
                             q = s.Write;
                             m = q < s.Read ? s.Read - q - 1 : s.End - q;
-
                             if (r != ZlibCompressionState.ZOK)
                             {
                                 this.Mode = r == ZlibCompressionState.ZSTREAMEND ? WASH : BADCODE;
@@ -430,13 +417,13 @@ namespace Elskom.Generic.Libs
                         this.Need = this.Lbits;
                         this.Tree = this.Ltree;
                         this.TreeIndex = this.LtreeIndex;
-
                         this.Mode = LEN;
                         goto case LEN;
+                    }
 
                     case LEN: // i: get length/literal/eob next
+                    {
                         j = this.Need;
-
                         while (k < j)
                         {
                             if (n != 0)
@@ -460,12 +447,9 @@ namespace Elskom.Generic.Libs
                         }
 
                         tindex = (this.TreeIndex + (b & InflateMask[j])) * 3;
-
                         b = SupportClass.URShift(b, this.Tree[tindex + 1]);
                         k -= this.Tree[tindex + 1];
-
                         e = this.Tree[tindex];
-
                         if (e == 0)
                         {
                             // literal
@@ -501,15 +485,18 @@ namespace Elskom.Generic.Libs
                         this.Mode = BADCODE; // invalid code
                         z.Msg = "invalid literal/length code";
                         r = ZlibCompressionState.ZDATAERROR;
-
-                        s.Bitb = b; s.Bitk = k;
-                        z.AvailIn = n; z.TotalIn += p - z.NextInIndex; z.NextInIndex = p;
+                        s.Bitb = b;
+                        s.Bitk = k;
+                        z.AvailIn = n;
+                        z.TotalIn += p - z.NextInIndex;
+                        z.NextInIndex = p;
                         s.Write = q;
                         return s.Inflate_flush(z, r);
+                    }
 
                     case LENEXT: // i: getting length extra (have base)
+                    {
                         j = this.GetRenamed;
-
                         while (k < j)
                         {
                             if (n != 0)
@@ -533,19 +520,18 @@ namespace Elskom.Generic.Libs
                         }
 
                         this.Len += b & InflateMask[j];
-
                         b >>= j;
                         k -= j;
-
                         this.Need = this.Dbits;
                         this.Tree = this.Dtree;
                         this.TreeIndex = this.DtreeIndex;
                         this.Mode = DIST;
                         goto case DIST;
+                    }
 
                     case DIST: // i: get distance next
+                    {
                         j = this.Need;
-
                         while (k < j)
                         {
                             if (n != 0)
@@ -569,10 +555,8 @@ namespace Elskom.Generic.Libs
                         }
 
                         tindex = (this.TreeIndex + (b & InflateMask[j])) * 3;
-
                         b >>= this.Tree[tindex + 1];
                         k -= this.Tree[tindex + 1];
-
                         e = this.Tree[tindex];
                         if ((e & 16) != 0)
                         {
@@ -594,15 +578,18 @@ namespace Elskom.Generic.Libs
                         this.Mode = BADCODE; // invalid code
                         z.Msg = "invalid distance code";
                         r = ZlibCompressionState.ZDATAERROR;
-
-                        s.Bitb = b; s.Bitk = k;
-                        z.AvailIn = n; z.TotalIn += p - z.NextInIndex; z.NextInIndex = p;
+                        s.Bitb = b;
+                        s.Bitk = k;
+                        z.AvailIn = n;
+                        z.TotalIn += p - z.NextInIndex;
+                        z.NextInIndex = p;
                         s.Write = q;
                         return s.Inflate_flush(z, r);
+                    }
 
                     case DISTEXT: // i: getting distance extra
+                    {
                         j = this.GetRenamed;
-
                         while (k < j)
                         {
                             if (n != 0)
@@ -626,14 +613,14 @@ namespace Elskom.Generic.Libs
                         }
 
                         this.Dist += b & InflateMask[j];
-
                         b >>= j;
                         k -= j;
-
                         this.Mode = COPY;
                         goto case COPY;
+                    }
 
                     case COPY: // o: copying bytes in window, waiting for space
+                    {
                         f = q - this.Dist;
                         while (f < 0)
                         {
@@ -657,7 +644,6 @@ namespace Elskom.Generic.Libs
                                     r = s.Inflate_flush(z, r);
                                     q = s.Write;
                                     m = q < s.Read ? s.Read - q - 1 : s.End - q;
-
                                     if (q == s.End && s.Read != 0)
                                     {
                                         q = 0;
@@ -679,7 +665,6 @@ namespace Elskom.Generic.Libs
 
                             s.Window[q++] = s.Window[f++];
                             m--;
-
                             if (f == s.End)
                             {
                                 f = 0;
@@ -690,8 +675,10 @@ namespace Elskom.Generic.Libs
 
                         this.Mode = START;
                         break;
+                    }
 
                     case LIT: // o: got literal, waiting for output space
+                    {
                         if (m == 0)
                         {
                             if (q == s.End && s.Read != 0)
@@ -706,7 +693,6 @@ namespace Elskom.Generic.Libs
                                 r = s.Inflate_flush(z, r);
                                 q = s.Write;
                                 m = q < s.Read ? s.Read - q - 1 : s.End - q;
-
                                 if (q == s.End && s.Read != 0)
                                 {
                                     q = 0;
@@ -727,13 +713,14 @@ namespace Elskom.Generic.Libs
                         }
 
                         r = ZlibCompressionState.ZOK;
-
-                        s.Window[q++] = (byte)this.Lit; m--;
-
+                        s.Window[q++] = (byte)this.Lit;
+                        m--;
                         this.Mode = START;
                         break;
+                    }
 
                     case WASH: // o: got eob, possibly more output
+                    {
                         if (k > 7)
                         {
                             // return unused byte, if any
@@ -742,9 +729,10 @@ namespace Elskom.Generic.Libs
                             p--; // can always return one
                         }
 
-                        s.Write = q; r = s.Inflate_flush(z, r);
-                        q = s.Write; m = q < s.Read ? s.Read - q - 1 : s.End - q;
-
+                        s.Write = q;
+                        r = s.Inflate_flush(z, r);
+                        q = s.Write;
+                        m = q < s.Read ? s.Read - q - 1 : s.End - q;
                         if (s.Read != s.Write)
                         {
                             s.Bitb = b;
@@ -758,30 +746,43 @@ namespace Elskom.Generic.Libs
 
                         this.Mode = END;
                         goto case END;
+                    }
 
                     case END:
+                    {
                         r = ZlibCompressionState.ZSTREAMEND;
-                        s.Bitb = b; s.Bitk = k;
-                        z.AvailIn = n; z.TotalIn += p - z.NextInIndex; z.NextInIndex = p;
+                        s.Bitb = b;
+                        s.Bitk = k;
+                        z.AvailIn = n;
+                        z.TotalIn += p - z.NextInIndex;
+                        z.NextInIndex = p;
                         s.Write = q;
                         return s.Inflate_flush(z, r);
+                    }
 
                     case BADCODE: // x: got error
-
+                    {
                         r = ZlibCompressionState.ZDATAERROR;
-
-                        s.Bitb = b; s.Bitk = k;
-                        z.AvailIn = n; z.TotalIn += p - z.NextInIndex; z.NextInIndex = p;
+                        s.Bitb = b;
+                        s.Bitk = k;
+                        z.AvailIn = n;
+                        z.TotalIn += p - z.NextInIndex;
+                        z.NextInIndex = p;
                         s.Write = q;
                         return s.Inflate_flush(z, r);
+                    }
 
                     default:
+                    {
                         r = ZlibCompressionState.ZSTREAMERROR;
-
-                        s.Bitb = b; s.Bitk = k;
-                        z.AvailIn = n; z.TotalIn += p - z.NextInIndex; z.NextInIndex = p;
+                        s.Bitb = b;
+                        s.Bitk = k;
+                        z.AvailIn = n;
+                        z.TotalIn += p - z.NextInIndex;
+                        z.NextInIndex = p;
                         s.Write = q;
                         return s.Inflate_flush(z, r);
+                    }
                 }
             }
         }

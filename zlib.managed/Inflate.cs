@@ -5,6 +5,8 @@
 
 namespace Elskom.Generic.Libs
 {
+    using System.Diagnostics.CodeAnalysis;
+
     /// <summary>
     /// Class for decompressing data through zlib.
     /// </summary>
@@ -13,7 +15,6 @@ namespace Elskom.Generic.Libs
         // preset dictionary flag in zlib header
         private const int PRESETDICT = 0x20;
         private const int ZDEFLATED = 8;
-
         private const int METHOD = 0; // waiting for method byte
         private const int FLAG = 1; // waiting for flag byte
         private const int DICT4 = 2; // four dictionary check bytes to go
@@ -70,34 +71,33 @@ namespace Elskom.Generic.Libs
             return ZlibCompressionState.ZOK;
         }
 
+        [SuppressMessage("Major Code Smell", "S1854:Unused assignments should be removed", Justification = "Needed for inflate.")]
         internal static ZlibCompressionState Decompress(ZStream z, ZlibFlushStrategy f)
         {
             ZlibCompressionState r;
             int b;
-
             if (z == null || z.Istate == null || z.INextIn == null)
             {
                 return ZlibCompressionState.ZSTREAMERROR;
             }
 
-            // f = f == ZlibFlushStrategy.ZFINISH ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
             r = ZlibCompressionState.ZBUFERROR;
             while (true)
             {
-                // System.out.println("mode: "+z.istate.mode);
                 switch (z.Istate.Mode)
                 {
                     case METHOD:
-
+                    {
                         if (z.AvailIn == 0)
                         {
                             return r;
                         }
 
                         r = f == ZlibFlushStrategy.ZFINISH ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
-
-                        z.AvailIn--; z.TotalIn++;
-                        if (((z.Istate.Method = z.INextIn[z.NextInIndex++]) & 0xf) != ZDEFLATED)
+                        z.AvailIn--;
+                        z.TotalIn++;
+                        z.Istate.Method = z.INextIn[z.NextInIndex++] & 0xf;
+                        if (z.Istate.Method != ZDEFLATED)
                         {
                             z.Istate.Mode = BAD;
                             z.Msg = "unknown compression method";
@@ -115,19 +115,19 @@ namespace Elskom.Generic.Libs
 
                         z.Istate.Mode = FLAG;
                         goto case FLAG;
+                    }
 
                     case FLAG:
-
+                    {
                         if (z.AvailIn == 0)
                         {
                             return r;
                         }
 
                         r = f == ZlibFlushStrategy.ZFINISH ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
-
-                        z.AvailIn--; z.TotalIn++;
+                        z.AvailIn--;
+                        z.TotalIn++;
                         b = z.INextIn[z.NextInIndex++] & 0xff;
-
                         if (((z.Istate.Method << 8) + b) % 31 != 0)
                         {
                             z.Istate.Mode = BAD;
@@ -144,72 +144,79 @@ namespace Elskom.Generic.Libs
 
                         z.Istate.Mode = DICT4;
                         goto case DICT4;
+                    }
 
                     case DICT4:
-
+                    {
                         if (z.AvailIn == 0)
                         {
                             return r;
                         }
 
                         r = f == ZlibFlushStrategy.ZFINISH ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
-
-                        z.AvailIn--; z.TotalIn++;
+                        z.AvailIn--;
+                        z.TotalIn++;
                         z.Istate.Need = ((z.INextIn[z.NextInIndex++] & 0xff) << 24) & unchecked((int)0xff000000L);
                         z.Istate.Mode = DICT3;
                         goto case DICT3;
+                    }
 
                     case DICT3:
-
+                    {
                         if (z.AvailIn == 0)
                         {
                             return r;
                         }
 
                         r = f == ZlibFlushStrategy.ZFINISH ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
-
-                        z.AvailIn--; z.TotalIn++;
+                        z.AvailIn--;
+                        z.TotalIn++;
                         z.Istate.Need += ((z.INextIn[z.NextInIndex++] & 0xff) << 16) & 0xff0000L;
                         z.Istate.Mode = DICT2;
                         goto case DICT2;
+                    }
 
                     case DICT2:
-
+                    {
                         if (z.AvailIn == 0)
                         {
                             return r;
                         }
 
                         r = f == ZlibFlushStrategy.ZFINISH ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
-
-                        z.AvailIn--; z.TotalIn++;
+                        z.AvailIn--;
+                        z.TotalIn++;
                         z.Istate.Need += ((z.INextIn[z.NextInIndex++] & 0xff) << 8) & 0xff00L;
                         z.Istate.Mode = DICT1;
                         goto case DICT1;
+                    }
 
                     case DICT1:
-
+                    {
                         if (z.AvailIn == 0)
                         {
                             return r;
                         }
 
                         r = f == ZlibFlushStrategy.ZFINISH ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
-
-                        z.AvailIn--; z.TotalIn++;
+                        z.AvailIn--;
+                        z.TotalIn++;
                         z.Istate.Need += z.INextIn[z.NextInIndex++] & 0xffL;
                         z.Adler = z.Istate.Need;
                         z.Istate.Mode = DICT0;
                         return ZlibCompressionState.ZNEEDDICT;
+                    }
 
                     case DICT0:
+                    {
                         z.Istate.Mode = BAD;
                         z.Msg = "need dictionary";
                         z.Istate.Marker = 0; // can try inflateSync
                         return ZlibCompressionState.ZSTREAMERROR;
+                    }
 
                     case BLOCKS:
-
+                    {
                         r = z.Istate.Blocks.Proc(z, r);
                         if (r == ZlibCompressionState.ZDATAERROR)
                         {
@@ -238,61 +245,64 @@ namespace Elskom.Generic.Libs
 
                         z.Istate.Mode = CHECK4;
                         goto case CHECK4;
+                    }
 
                     case CHECK4:
-
+                    {
                         if (z.AvailIn == 0)
                         {
                             return r;
                         }
 
                         r = f == ZlibFlushStrategy.ZFINISH ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
-
-                        z.AvailIn--; z.TotalIn++;
+                        z.AvailIn--;
+                        z.TotalIn++;
                         z.Istate.Need = ((z.INextIn[z.NextInIndex++] & 0xff) << 24) & unchecked((int)0xff000000L);
                         z.Istate.Mode = CHECK3;
                         goto case CHECK3;
+                    }
 
                     case CHECK3:
-
+                    {
                         if (z.AvailIn == 0)
                         {
                             return r;
                         }
 
                         r = f == ZlibFlushStrategy.ZFINISH ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
-
-                        z.AvailIn--; z.TotalIn++;
+                        z.AvailIn--;
+                        z.TotalIn++;
                         z.Istate.Need += ((z.INextIn[z.NextInIndex++] & 0xff) << 16) & 0xff0000L;
                         z.Istate.Mode = CHECK2;
                         goto case CHECK2;
+                    }
 
                     case CHECK2:
-
+                    {
                         if (z.AvailIn == 0)
                         {
                             return r;
                         }
 
                         r = f == ZlibFlushStrategy.ZFINISH ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
-
-                        z.AvailIn--; z.TotalIn++;
+                        z.AvailIn--;
+                        z.TotalIn++;
                         z.Istate.Need += ((z.INextIn[z.NextInIndex++] & 0xff) << 8) & 0xff00L;
                         z.Istate.Mode = CHECK1;
                         goto case CHECK1;
+                    }
 
                     case CHECK1:
-
+                    {
                         if (z.AvailIn == 0)
                         {
                             return r;
                         }
 
                         r = f == ZlibFlushStrategy.ZFINISH ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
-
-                        z.AvailIn--; z.TotalIn++;
+                        z.AvailIn--;
+                        z.TotalIn++;
                         z.Istate.Need += z.INextIn[z.NextInIndex++] & 0xffL;
-
                         if ((int)z.Istate.Was[0] != (int)z.Istate.Need)
                         {
                             z.Istate.Mode = BAD;
@@ -303,15 +313,22 @@ namespace Elskom.Generic.Libs
 
                         z.Istate.Mode = DONE;
                         goto case DONE;
+                    }
 
                     case DONE:
+                    {
                         return ZlibCompressionState.ZSTREAMEND;
+                    }
 
                     case BAD:
+                    {
                         return ZlibCompressionState.ZDATAERROR;
+                    }
 
                     default:
+                    {
                         return ZlibCompressionState.ZSTREAMERROR;
+                    }
                 }
             }
         }
@@ -331,7 +348,6 @@ namespace Elskom.Generic.Libs
             }
 
             z.Adler = Adler32.Calculate(0, null, 0, 0);
-
             if (length >= 1 << z.Istate.Wbits)
             {
                 length = (1 << z.Istate.Wbits) - 1;
@@ -413,7 +429,8 @@ namespace Elskom.Generic.Libs
         // but removes the length bytes of the resulting empty stored block. When
         // decompressing, PPP checks that at the end of input packet, inflate is
         // waiting for these length bytes.
-        internal static ZlibCompressionState InflateSyncPoint(ZStream z) => z == null || z.Istate == null || z.Istate.Blocks == null ? ZlibCompressionState.ZSTREAMERROR : z.Istate.Blocks.Sync_point();
+        internal static ZlibCompressionState InflateSyncPoint(ZStream z)
+            => z == null || z.Istate == null || z.Istate.Blocks == null ? ZlibCompressionState.ZSTREAMERROR : z.Istate.Blocks.Sync_point();
 
         internal ZlibCompressionState InflateEnd(ZStream z)
         {
@@ -423,8 +440,6 @@ namespace Elskom.Generic.Libs
             }
 
             this.Blocks = null;
-
-            // ZFREE(z, z->state);
             return ZlibCompressionState.ZOK;
         }
 
@@ -449,7 +464,6 @@ namespace Elskom.Generic.Libs
             }
 
             this.Wbits = w;
-
             z.Istate.Blocks = new InfBlocks(z, z.Istate.Nowrap != 0 ? null : this, 1 << w);
 
             // reset state

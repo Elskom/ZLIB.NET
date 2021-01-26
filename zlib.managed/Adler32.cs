@@ -23,45 +23,18 @@ namespace Elskom.Generic.Libs
             var s1 = adler & 0xffff;
             var s2 = (adler >> 16) & 0xffff;
             int k;
-
             while (len > 0)
             {
                 k = len < NMAX ? len : NMAX;
                 len -= k;
                 while (k >= 16)
                 {
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
-                    s1 += buf[index++] & 0xff;
-                    s2 += s1;
+                    for (var i = 0; i < 16; i++)
+                    {
+                        s1 += buf[index++] & 0xff;
+                        s2 += s1;
+                    }
+
                     k -= 16;
                 }
 

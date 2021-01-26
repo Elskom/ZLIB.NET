@@ -371,9 +371,7 @@ namespace Elskom.Generic.Libs
             ZlibCompressionState r;
             var hn = new int[1]; // hufts used in space
             var v = new int[19]; // work area for huft_build
-
             r = Huft_build(c, 0, 19, 19, null, null, tb, bb, hp, hn, v);
-
             if (r == ZlibCompressionState.ZDATAERROR)
             {
                 z.Msg = "oversubscribed dynamic bit lengths tree";
@@ -412,7 +410,6 @@ namespace Elskom.Generic.Libs
 
             // build distance tree
             r = Huft_build(c, nl, nd, 0, Cpdist, Cpdext, td, bd, hp, hn, v);
-
             if (r != ZlibCompressionState.ZOK || (bd[0] == 0 && nl > 257))
             {
                 if (r == ZlibCompressionState.ZDATAERROR)

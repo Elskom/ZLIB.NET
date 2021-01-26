@@ -124,7 +124,8 @@ namespace Elskom.Generic.Libs
         protected bool Compress { get; private set; }
 
         /// <inheritdoc/>
-        public override int ReadByte() => this.Read(this.pBuf1, 0, 1) == -1 ? -1 : this.pBuf1[0] & 0xFF;
+        public override int ReadByte()
+            => this.Read(this.pBuf1, 0, 1) == -1 ? -1 : this.pBuf1[0] & 0xFF;
 
         /// <inheritdoc/>
         public override int Read(byte[] b, int off, int len)
@@ -144,7 +145,7 @@ namespace Elskom.Generic.Libs
                 {
                     // if buffer is empty and more input is avaiable, refill it
                     this.Z.NextInIndex = 0;
-                    this.Z.AvailIn = SupportClass.ReadInput(this.BaseStream, this.pBuf, 0, this.Bufsize); // (bufsize<z.avail_out ? bufsize : z.avail_out));
+                    this.Z.AvailIn = SupportClass.ReadInput(this.BaseStream, this.pBuf, 0, this.Bufsize);
                     if (this.Z.AvailIn == -1)
                     {
                         this.Z.AvailIn = 0;
@@ -153,7 +154,6 @@ namespace Elskom.Generic.Libs
                 }
 
                 err = this.Compress ? this.Z.Deflate(this.FlushMode) : this.Z.Inflate(this.FlushMode);
-
                 if (this.Moreinput && err == ZlibCompressionState.ZBUFERROR)
                 {
                     return -1;
@@ -171,7 +171,6 @@ namespace Elskom.Generic.Libs
             }
             while (this.Z.AvailOut > 0 && err == ZlibCompressionState.ZOK);
 
-            // System.err.print("("+(len-z.avail_out)+")");
             return len - this.Z.AvailOut;
         }
 
@@ -210,7 +209,6 @@ namespace Elskom.Generic.Libs
                     this.Z.NextOutIndex = 0;
                     this.Z.AvailOut = this.Bufsize;
                     err = this.Compress ? this.Z.Deflate(ZlibFlushStrategy.ZFINISH) : this.Z.Inflate(ZlibFlushStrategy.ZFINISH);
-
                     if (err != ZlibCompressionState.ZSTREAMEND && err != ZlibCompressionState.ZOK)
                     {
                         throw new ZStreamException((this.Compress ? "de" : "in") + "flating: " + this.Z.Msg);
@@ -238,22 +236,25 @@ namespace Elskom.Generic.Libs
         public virtual void EndStream()
         {
             _ = this.Compress ? this.Z.DeflateEnd() : this.Z.InflateEnd();
-
             this.Z.Free();
             this.Z = null;
         }
 
         /// <inheritdoc/>
-        public override void Flush() => this.BaseStream.Flush();
+        public override void Flush()
+            => this.BaseStream.Flush();
 
         /// <inheritdoc/>
-        public override long Seek(long offset, SeekOrigin origin) => 0;
+        public override long Seek(long offset, SeekOrigin origin)
+            => 0;
 
         /// <inheritdoc/>
-        public override void SetLength(long value) => throw new NotImplementedException();
+        public override void SetLength(long value)
+            => throw new NotImplementedException();
 
         /// <inheritdoc/>
-        public override void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();
+        public override void Write(byte[] buffer, int offset, int count)
+            => throw new NotImplementedException();
 
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)

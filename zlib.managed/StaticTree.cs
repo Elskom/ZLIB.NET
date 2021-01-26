@@ -53,7 +53,6 @@ namespace Elskom.Generic.Libs
         internal static readonly StaticTree StaticBlDesc = new StaticTree(null, Tree.ExtraBlbits, 0, BLCODES, MAXBLBITS);
 
         private const int MAXBITS = 15;
-
         private const int BLCODES = 19;
         private const int DCODES = 30;
         private const int LITERALS = 256;

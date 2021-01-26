@@ -6,6 +6,7 @@
 namespace Elskom.Generic.Libs
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Class for compressing data through zlib.
@@ -67,7 +68,6 @@ namespace Elskom.Generic.Libs
         private const int BLCODES = 19;
         private const int LENGTHCODES = 29;
         private const int LITERALS = 256;
-
         private const int ENDBLOCK = 256;
         private const int MINLOOKAHEAD = MAXMATCH + MINMATCH + 1;
         private const int LCODES = LITERALS + 1 + LENGTHCODES;
@@ -80,7 +80,6 @@ namespace Elskom.Generic.Libs
             new Config(4, 4, 8, 4, FAST),  // 1
             new Config(4, 5, 16, 8, FAST),  // 2
             new Config(4, 6, 32, 32, FAST),  // 3
-
             new Config(4, 4, 16, 16, SLOW),  // 4
             new Config(8, 16, 32, 32, SLOW),  // 5
             new Config(8, 16, 128, 128, SLOW),  // 6
@@ -286,7 +285,6 @@ namespace Elskom.Generic.Libs
         internal void Lm_init()
         {
             this.WindowSize = 2 * this.WSize;
-
             this.Head[this.HashSize - 1] = 0;
             for (var i = 0; i < this.HashSize - 1; i++)
             {
@@ -298,7 +296,6 @@ namespace Elskom.Generic.Libs
             this.GoodMatch = ConfigTable[(int)this.Level].GoodLength;
             this.NiceMatch = ConfigTable[(int)this.Level].NiceLength;
             this.MaxChainLength = ConfigTable[(int)this.Level].MaxChain;
-
             this.Strstart = 0;
             this.BlockStart = 0;
             this.Lookahead = 0;
@@ -312,13 +309,10 @@ namespace Elskom.Generic.Libs
         {
             this.LDesc.DynTree = this.DynLtree;
             this.LDesc.StatDesc = StaticTree.StaticLDesc;
-
             this.DDesc.DynTree = this.DynDtree;
             this.DDesc.StatDesc = StaticTree.StaticDDesc;
-
             this.BlDesc.DynTree = this.BlTree;
             this.BlDesc.StatDesc = StaticTree.StaticBlDesc;
-
             this.BiBuf = 0;
             this.BiValid = 0;
             this.LastEobLen = 8; // enough lookahead for inflate
@@ -394,7 +388,6 @@ namespace Elskom.Generic.Libs
             var count = 0; // repeat count of the current code
             var max_count = 7; // max repeat count
             var min_count = 4; // min repeat count
-
             if (nextlen == 0)
             {
                 max_count = 138;
@@ -402,7 +395,6 @@ namespace Elskom.Generic.Libs
             }
 
             tree[((max_code + 1) * 2) + 1] = (short)SupportClass.Identity(0xffff); // guard
-
             for (n = 0; n <= max_code; n++)
             {
                 curlen = nextlen;
@@ -482,7 +474,6 @@ namespace Elskom.Generic.Libs
 
             // Update opt_len to include the bit length tree and counts
             this.OptLen += (3 * (max_blindex + 1)) + 5 + 5 + 4;
-
             return max_blindex;
         }
 
@@ -492,7 +483,6 @@ namespace Elskom.Generic.Libs
         internal void Send_all_trees(int lcodes, int dcodes, int blcodes)
         {
             int rank; // index in bl_order
-
             this.Send_bits(lcodes - 257, 5); // not +255 as stated in appnote.txt
             this.Send_bits(dcodes - 1, 5);
             this.Send_bits(blcodes - 4, 4); // not -3 as stated in appnote.txt
@@ -516,7 +506,6 @@ namespace Elskom.Generic.Libs
             var count = 0; // repeat count of the current code
             var max_count = 7; // max repeat count
             var min_count = 4; // min repeat count
-
             if (nextlen == 0)
             {
                 max_count = 138;
@@ -589,7 +578,8 @@ namespace Elskom.Generic.Libs
             this.Pending += len;
         }
 
-        internal void Put_byte(byte c) => this.PendingBuf[this.Pending++] = c;
+        internal void Put_byte(byte c)
+            => this.PendingBuf[this.Pending++] = c;
 
         internal void Put_short(int w)
         {
@@ -603,7 +593,8 @@ namespace Elskom.Generic.Libs
             this.Put_byte((byte)b);
         }
 
-        internal void Send_code(int c, short[] tree) => this.Send_bits(tree[c * 2] & 0xffff, tree[(c * 2) + 1] & 0xffff);
+        internal void Send_code(int c, short[] tree)
+            => this.Send_bits(tree[c * 2] & 0xffff, tree[(c * 2) + 1] & 0xffff);
 
         internal void Send_bits(int value_Renamed, int length)
         {
@@ -611,8 +602,6 @@ namespace Elskom.Generic.Libs
             if (this.BiValid > BufSize - len)
             {
                 var val = value_Renamed;
-
-                // bi_buf |= (val << bi_valid);
                 this.BiBuf = (short)((ushort)this.BiBuf | (ushort)((val << this.BiValid) & 0xffff));
                 this.Put_short(this.BiBuf);
                 this.BiBuf = (short)SupportClass.URShift(val, BufSize - this.BiValid);
@@ -620,7 +609,6 @@ namespace Elskom.Generic.Libs
             }
             else
             {
-                // bi_buf |= (value) << bi_valid;
                 this.BiBuf = (short)((ushort)this.BiBuf | (ushort)((value_Renamed << this.BiValid) & 0xffff));
                 this.BiValid += len;
             }
@@ -639,14 +627,13 @@ namespace Elskom.Generic.Libs
         {
             this.Send_bits(STATICTREES << 1, 3);
             this.Send_code(ENDBLOCK, StaticTree.StaticLtree);
-
             this.Bi_flush();
 
             // Of the 10 bits for the empty block, we have already sent
             // (10 - bi_valid) bits. The lookahead for the last real code (before
             // the EOB of the previous block) was thus at least one plus the length
             // of the EOB plus what we have just sent of the empty static block.
-            if ((1 + this.LastEobLen + 10) - this.BiValid < 9)
+            if (1 + this.LastEobLen + 10 - this.BiValid < 9)
             {
                 this.Send_bits(STATICTREES << 1, 3);
                 this.Send_code(ENDBLOCK, StaticTree.StaticLtree);
@@ -662,10 +649,8 @@ namespace Elskom.Generic.Libs
         {
             this.PendingBuf[this.DBuf + (this.LastLit * 2)] = (byte)SupportClass.URShift(dist, 8);
             this.PendingBuf[this.DBuf + (this.LastLit * 2) + 1] = (byte)dist;
-
             this.PendingBuf[this.LBuf + this.LastLit] = (byte)lc;
             this.LastLit++;
-
             if (dist == 0)
             {
                 // lc is the unmatched char
@@ -714,7 +699,6 @@ namespace Elskom.Generic.Libs
             var lx = 0; // running index in l_buf
             int code; // the code to send
             int extra; // number of extra bits to send
-
             if (this.LastLit != 0)
             {
                 do
@@ -722,7 +706,6 @@ namespace Elskom.Generic.Libs
                     dist = ((this.PendingBuf[this.DBuf + (lx * 2)] << 8) & 0xff00) | (this.PendingBuf[this.DBuf + (lx * 2) + 1] & 0xff);
                     lc = this.PendingBuf[this.LBuf + lx] & 0xff;
                     lx++;
-
                     if (dist == 0)
                     {
                         this.Send_code(lc, ltree); // send a literal byte
@@ -731,7 +714,6 @@ namespace Elskom.Generic.Libs
                     {
                         // Here, lc is the match length - MIN_MATCH
                         code = Tree.LengthCode[lc];
-
                         this.Send_code(code + LITERALS + 1, ltree); // send the length code
                         extra = Tree.ExtraLbits[code];
                         if (extra != 0)
@@ -742,7 +724,6 @@ namespace Elskom.Generic.Libs
 
                         dist--; // dist is now the match distance - 1
                         code = Tree.D_code(dist);
-
                         this.Send_code(code, dtree); // send the distance code
                         extra = Tree.ExtraDbits[code];
                         if (extra != 0)
@@ -830,17 +811,12 @@ namespace Elskom.Generic.Libs
         {
             this.Bi_windup(); // align on byte boundary
             this.LastEobLen = 8; // enough lookahead for inflate
-
             if (header)
             {
                 this.Put_short((short)len);
                 this.Put_short((short)~len);
             }
 
-            // while(len--!=0) {
-            //    put_byte(window[buf+index]);
-            //    index++;
-            //  }
             this.Put_byte(this.Window, buf, len);
         }
 
@@ -858,13 +834,13 @@ namespace Elskom.Generic.Libs
         // only for the level=0 compression option.
         // NOTE: this function should be optimized to avoid extra copying from
         // window to pending_buf.
+        [SuppressMessage("Major Code Smell", "S3358:Ternary operators should not be nested", Justification = "Needed for deflate.")]
         internal int Deflate_stored(ZlibFlushStrategy flush)
         {
             // Stored blocks are limited to 0xffff bytes, pending_buf is limited
             // to pending_buf_size, and each stored block has a 5 byte header:
             var max_block_size = 0xffff;
             int max_start;
-
             if (max_block_size > this.PendingBufSize - 5)
             {
                 max_block_size = this.PendingBufSize - 5;
@@ -898,7 +874,6 @@ namespace Elskom.Generic.Libs
                     // strstart == 0 is possible when wraparound on 16-bit machine
                     this.Lookahead = this.Strstart - max_start;
                     this.Strstart = max_start;
-
                     this.Flush_block_only(false);
                     if (this.Strm.AvailOut == 0)
                     {
@@ -947,7 +922,6 @@ namespace Elskom.Generic.Libs
 
                 // Construct the literal and distance trees
                 this.LDesc.Build_tree(this);
-
                 this.DDesc.Build_tree(this);
 
                 // At this point, opt_len and static_len are the total bit lengths of
@@ -960,7 +934,6 @@ namespace Elskom.Generic.Libs
                 // Determine the best encoding. Compute first the block length in bytes
                 opt_lenb = SupportClass.URShift(this.OptLen + 3 + 7, 3);
                 static_lenb = SupportClass.URShift(this.StaticLen + 3 + 7, 3);
-
                 if (static_lenb <= opt_lenb)
                 {
                     opt_lenb = static_lenb;
@@ -996,7 +969,6 @@ namespace Elskom.Generic.Libs
             // The above check is made mod 2^32, for files larger than 512 MB
             // and uLong implemented on 32 bits.
             this.Init_block();
-
             if (eof)
             {
                 this.Bi_windup();
@@ -1016,7 +988,6 @@ namespace Elskom.Generic.Libs
             int n, m;
             int p;
             int more; // Amount of free space at the end of the window.
-
             do
             {
                 more = this.WindowSize - this.Lookahead - this.Strstart;
@@ -1035,7 +1006,7 @@ namespace Elskom.Generic.Libs
                     // If the window is almost full and there is insufficient lookahead,
                     // move the upper half to the lower one to make room in the upper half.
                 }
-                else if (this.Strstart >= (this.WSize + this.WSize) - MINLOOKAHEAD)
+                else if (this.Strstart >= this.WSize + this.WSize - MINLOOKAHEAD)
                 {
                     Array.Copy(this.Window, this.WSize, this.Window, 0, this.WSize);
                     this.MatchStart -= this.WSize;
@@ -1053,11 +1024,8 @@ namespace Elskom.Generic.Libs
                     {
                         m = this.Head[--p] & 0xffff;
                         this.Head[p] = (short)(m >= this.WSize ? m - this.WSize : 0);
-
-                        // head[p] = (m >= w_size?(short) (m - w_size):0);
                     }
                     while (--n != 0);
-
                     n = this.WSize;
                     p = n;
                     do
@@ -1065,7 +1033,6 @@ namespace Elskom.Generic.Libs
                         m = this.Prev[--p] & 0xffff;
                         this.Prev[p] = (short)(m >= this.WSize ? m - this.WSize : 0);
 
-                        // prev[p] = (m >= w_size?(short) (m - w_size):0);
                         // If n is not on any hash chain, prev[n] is garbage but
                         // its value will never be used.
                     }
@@ -1109,12 +1076,12 @@ namespace Elskom.Generic.Libs
         // This function does not perform lazy evaluation of matches and inserts
         // new strings in the dictionary only for unmatched strings or for short
         // matches. It is used only for the fast compression options.
+        [SuppressMessage("Major Code Smell", "S3358:Ternary operators should not be nested", Justification = "Needed for deflate.")]
         internal int Deflate_fast(ZlibFlushStrategy flush)
         {
             // short hash_head = 0; // head of the hash chain
             var hash_head = 0; // head of the hash chain
             bool bflush; // set if current block must be flushed
-
             while (true)
             {
                 // Make sure that we always have enough lookahead, except
@@ -1140,8 +1107,6 @@ namespace Elskom.Generic.Libs
                 if (this.Lookahead >= MINMATCH)
                 {
                     this.InsH = ((this.InsH << this.HashShift) ^ (this.Window[this.Strstart + (MINMATCH - 1)] & 0xff)) & this.HashMask;
-
-                    // prev[strstart&w_mask]=hash_head=head[ins_h];
                     hash_head = this.Head[this.InsH] & 0xffff;
                     this.Prev[this.Strstart & this.WMask] = this.Head[this.InsH];
                     this.Head[this.InsH] = (short)this.Strstart;
@@ -1149,24 +1114,19 @@ namespace Elskom.Generic.Libs
 
                 // Find the longest match, discarding those <= prev_length.
                 // At this point we have always match_length < MIN_MATCH
-                if (hash_head != 0L && ((this.Strstart - hash_head) & 0xffff) <= this.WSize - MINLOOKAHEAD)
+                // To simplify the code, we prevent matches with the string
+                // of window index 0 (in particular we have to avoid a match
+                // of the string with itself at the start of the input file).
+                if (hash_head != 0L && ((this.Strstart - hash_head) & 0xffff) <= this.WSize - MINLOOKAHEAD && this.Strategy != ZlibCompressionStrategy.ZHUFFMANONLY)
                 {
-                    // To simplify the code, we prevent matches with the string
-                    // of window index 0 (in particular we have to avoid a match
-                    // of the string with itself at the start of the input file).
-                    if (this.Strategy != ZlibCompressionStrategy.ZHUFFMANONLY)
-                    {
-                        this.MatchLength = this.Longest_match(hash_head);
-                    }
+                    this.MatchLength = this.Longest_match(hash_head);
 
                     // longest_match() sets match_start
                 }
 
                 if (this.MatchLength >= MINMATCH)
                 {
-                    // check_match(strstart, match_start, match_length);
                     bflush = this.Tr_tally(this.Strstart - this.MatchStart, this.MatchLength - MINMATCH);
-
                     this.Lookahead -= this.MatchLength;
 
                     // Insert new strings in the hash table only if the match length
@@ -1177,10 +1137,7 @@ namespace Elskom.Generic.Libs
                         do
                         {
                             this.Strstart++;
-
                             this.InsH = ((this.InsH << this.HashShift) ^ (this.Window[this.Strstart + (MINMATCH - 1)] & 0xff)) & this.HashMask;
-
-                            // prev[strstart&w_mask]=hash_head=head[ins_h];
                             hash_head = this.Head[this.InsH] & 0xffff;
                             this.Prev[this.Strstart & this.WMask] = this.Head[this.InsH];
                             this.Head[this.InsH] = (short)this.Strstart;
@@ -1196,7 +1153,6 @@ namespace Elskom.Generic.Libs
                         this.Strstart += this.MatchLength;
                         this.MatchLength = 0;
                         this.InsH = this.Window[this.Strstart] & 0xff;
-
                         this.InsH = ((this.InsH << this.HashShift) ^ (this.Window[this.Strstart + 1] & 0xff)) & this.HashMask;
 
                         // If lookahead < MIN_MATCH, ins_h is garbage, but it does not
@@ -1228,6 +1184,8 @@ namespace Elskom.Generic.Libs
         // Same as above, but achieves better compression. We use a lazy
         // evaluation for matches: a match is finally adopted only if there is
         // no better match at the next window position.
+        [SuppressMessage("Major Code Smell", "S1854:Unused assignments should be removed", Justification = "Needed for deflate.")]
+        [SuppressMessage("Major Code Smell", "S3358:Ternary operators should not be nested", Justification = "Needed for deflate.")]
         internal int Deflate_slow(ZlibFlushStrategy flush)
         {
             // short hash_head = 0;    // head of hash chain
@@ -1260,8 +1218,6 @@ namespace Elskom.Generic.Libs
                 if (this.Lookahead >= MINMATCH)
                 {
                     this.InsH = ((this.InsH << this.HashShift) ^ (this.Window[this.Strstart + (MINMATCH - 1)] & 0xff)) & this.HashMask;
-
-                    // prev[strstart&w_mask]=hash_head=head[ins_h];
                     hash_head = this.Head[this.InsH] & 0xffff;
                     this.Prev[this.Strstart & this.WMask] = this.Head[this.InsH];
                     this.Head[this.InsH] = (short)this.Strstart;
@@ -1271,7 +1227,6 @@ namespace Elskom.Generic.Libs
                 this.PrevLength = this.MatchLength;
                 this.PrevMatch = this.MatchStart;
                 this.MatchLength = MINMATCH - 1;
-
                 if (hash_head != 0 && this.PrevLength < this.MaxLazyMatch && ((this.Strstart - hash_head) & 0xffff) <= this.WSize - MINLOOKAHEAD)
                 {
                     // To simplify the code, we prevent matches with the string
@@ -1295,11 +1250,9 @@ namespace Elskom.Generic.Libs
                 // match is not better, output the previous match:
                 if (this.PrevLength >= MINMATCH && this.MatchLength <= this.PrevLength)
                 {
-                    var max_insert = (this.Strstart + this.Lookahead) - MINMATCH;
+                    var max_insert = this.Strstart + this.Lookahead - MINMATCH;
 
                     // Do not insert strings in hash table beyond this.
-
-                    // check_match(strstart-1, prev_match, prev_length);
                     bflush = this.Tr_tally(this.Strstart - 1 - this.PrevMatch, this.PrevLength - MINMATCH);
 
                     // Insert in hash table all strings up to the end of the match.
@@ -1313,8 +1266,6 @@ namespace Elskom.Generic.Libs
                         if (++this.Strstart <= max_insert)
                         {
                             this.InsH = ((this.InsH << this.HashShift) ^ (this.Window[this.Strstart + (MINMATCH - 1)] & 0xff)) & this.HashMask;
-
-                            // prev[strstart&w_mask]=hash_head=head[ins_h];
                             hash_head = this.Head[this.InsH] & 0xffff;
                             this.Prev[this.Strstart & this.WMask] = this.Head[this.InsH];
                             this.Head[this.InsH] = (short)this.Strstart;
@@ -1324,7 +1275,6 @@ namespace Elskom.Generic.Libs
                     this.MatchAvailable = 0;
                     this.MatchLength = MINMATCH - 1;
                     this.Strstart++;
-
                     if (bflush)
                     {
                         this.Flush_block_only(false);
@@ -1340,7 +1290,6 @@ namespace Elskom.Generic.Libs
                     // single literal. If there was a match but the current match
                     // is longer, truncate the previous match to a single literal.
                     bflush = this.Tr_tally(0, this.Window[this.Strstart - 1] & 0xff);
-
                     if (bflush)
                     {
                         this.Flush_block_only(false);
@@ -1370,10 +1319,11 @@ namespace Elskom.Generic.Libs
             }
 
             this.Flush_block_only(flush == ZlibFlushStrategy.ZFINISH);
-
             return this.Strm.AvailOut == 0 ? flush == ZlibFlushStrategy.ZFINISH ? FinishStarted : NeedMore : flush == ZlibFlushStrategy.ZFINISH ? FinishDone : BlockDone;
         }
 
+        [SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "Not code.")]
+        [SuppressMessage("Major Bug", "S1764:Identical expressions should not be used on both sides of a binary operator", Justification = "Needed for deflate.")]
         internal int Longest_match(int cur_match)
         {
             var chain_length = this.MaxChainLength; // max hash chain length
@@ -1387,14 +1337,12 @@ namespace Elskom.Generic.Libs
             // Stop when cur_match becomes <= limit. To simplify the code,
             // we prevent matches with the string of window index 0.
             var wmask = this.WMask;
-
             var strend = this.Strstart + MAXMATCH;
-            var scan_end1 = this.Window[(scan + best_len) - 1];
+            var scan_end1 = this.Window[scan + best_len - 1];
             var scan_end = this.Window[scan + best_len];
 
             // The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
             // It is easy to get rid of this optimization if necessary.
-
             // Do not waste too much time if we already have a good match:
             if (this.PrevLength >= this.GoodMatch)
             {
@@ -1414,7 +1362,7 @@ namespace Elskom.Generic.Libs
 
                 // Skip to next match if the match length cannot increase
                 // or if the match length is less than 2:
-                if (this.Window[match + best_len] != scan_end || this.Window[(match + best_len) - 1] != scan_end1 || this.Window[match] != this.Window[scan] || this.Window[++match] != this.Window[scan + 1])
+                if (this.Window[match + best_len] != scan_end || this.Window[match + best_len - 1] != scan_end1 || this.Window[match] != this.Window[scan] || this.Window[++match] != this.Window[scan + 1])
                 {
                     continue;
                 }
@@ -1431,12 +1379,11 @@ namespace Elskom.Generic.Libs
                 // the 256th check will be made at strstart+258.
                 do
                 {
+                    // nothing here.
                 }
                 while (this.Window[++scan] == this.Window[++match] && this.Window[++scan] == this.Window[++match] && this.Window[++scan] == this.Window[++match] && this.Window[++scan] == this.Window[++match] && this.Window[++scan] == this.Window[++match] && this.Window[++scan] == this.Window[++match] && this.Window[++scan] == this.Window[++match] && this.Window[++scan] == this.Window[++match] && scan < strend);
-
                 len = MAXMATCH - (strend - scan);
                 scan = strend - MAXMATCH;
-
                 if (len > best_len)
                 {
                     this.MatchStart = cur_match;
@@ -1446,32 +1393,25 @@ namespace Elskom.Generic.Libs
                         break;
                     }
 
-                    scan_end1 = this.Window[(scan + best_len) - 1];
+                    scan_end1 = this.Window[scan + best_len - 1];
                     scan_end = this.Window[scan + best_len];
                 }
             }
             while ((cur_match = this.Prev[cur_match & wmask] & 0xffff) > limit && --chain_length != 0);
-
             return best_len <= this.Lookahead ? best_len : this.Lookahead;
         }
 
-        internal ZlibCompressionState DeflateInit(ZStream strm, ZlibCompression level, int bits) => this.DeflateInit2(strm, level, ZDEFLATED, bits, DEFMEMLEVEL, ZlibCompressionStrategy.ZDEFAULTSTRATEGY);
+        internal ZlibCompressionState DeflateInit(ZStream strm, ZlibCompression level, int bits)
+            => this.DeflateInit2(strm, level, ZDEFLATED, bits, DEFMEMLEVEL, ZlibCompressionStrategy.ZDEFAULTSTRATEGY);
 
-        internal ZlibCompressionState DeflateInit(ZStream strm, ZlibCompression level) => this.DeflateInit(strm, level, MAXWBITS);
+        internal ZlibCompressionState DeflateInit(ZStream strm, ZlibCompression level)
+            => this.DeflateInit(strm, level, MAXWBITS);
 
+        [SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "Not code.")]
         internal ZlibCompressionState DeflateInit2(ZStream strm, ZlibCompression level, int method, int windowBits, int memLevel, ZlibCompressionStrategy strategy)
         {
             var noheader = 0;
-
-            // byte[] my_version=ZLIB_VERSION;
-
-            //
-            //  if (version == null || version[0] != my_version[0]
-            //  || stream_size != sizeof(z_stream)) {
-            //  return Z_VERSION_ERROR;
-            //  }
             strm.Msg = null;
-
             if (level == ZlibCompression.ZDEFAULTCOMPRESSION)
             {
                 level = (ZlibCompression)6;
@@ -1490,49 +1430,39 @@ namespace Elskom.Generic.Libs
             }
 
             strm.Dstate = this;
-
             this.Noheader = noheader;
             this.WBits = windowBits;
             this.WSize = 1 << this.WBits;
             this.WMask = this.WSize - 1;
-
             this.HashBits = memLevel + 7;
             this.HashSize = 1 << this.HashBits;
             this.HashMask = this.HashSize - 1;
-            this.HashShift = ((this.HashBits + MINMATCH) - 1) / MINMATCH;
-
+            this.HashShift = (this.HashBits + MINMATCH - 1) / MINMATCH;
             this.Window = new byte[this.WSize * 2];
             this.Prev = new short[this.WSize];
             this.Head = new short[this.HashSize];
-
             this.LitBufsize = 1 << (memLevel + 6); // 16K elements by default
 
             // We overlay pending_buf and d_buf+l_buf. This works since the average
-            // output size for (length,distance) codes is <= 24 bits.
+            // output size for (length, distance) codes is <= 24 bits.
             this.PendingBuf = new byte[this.LitBufsize * 4];
             this.PendingBufSize = this.LitBufsize * 4;
-
             this.DBuf = this.LitBufsize;
             this.LBuf = (1 + 2) * this.LitBufsize;
-
             this.Level = level;
-
-            // System.out.println("level="+level);
             this.Strategy = strategy;
             this.Method = (byte)method;
-
             return this.DeflateReset(strm);
         }
 
+        [SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "Not code.")]
         internal ZlibCompressionState DeflateReset(ZStream strm)
         {
             strm.TotalIn = strm.TotalOut = 0;
             strm.Msg = null;
             strm.DataType = ZUNKNOWN;
-
             this.Pending = 0;
             this.PendingOut = 0;
-
             if (this.Noheader < 0)
             {
                 this.Noheader = 0; // was set to -1 by deflate(..., Z_FINISH);
@@ -1540,9 +1470,7 @@ namespace Elskom.Generic.Libs
 
             this.Status = this.Noheader != 0 ? BUSYSTATE : INITSTATE;
             strm.Adler = Adler32.Calculate(0, null, 0, 0);
-
             this.LastFlush = ZlibFlushStrategy.ZNOFLUSH;
-
             this.Tr_init();
             this.Lm_init();
             return ZlibCompressionState.ZOK;
@@ -1562,14 +1490,12 @@ namespace Elskom.Generic.Libs
             this.Window = null;
 
             // free
-            // dstate=null;
             return this.Status == BUSYSTATE ? ZlibCompressionState.ZDATAERROR : ZlibCompressionState.ZOK;
         }
 
         internal ZlibCompressionState DeflateParams(ZStream strm, ZlibCompression level, ZlibCompressionStrategy strategy)
         {
             var err = ZlibCompressionState.ZOK;
-
             if (level == ZlibCompression.ZDEFAULTCOMPRESSION)
             {
                 level = (ZlibCompression)6;
@@ -1603,14 +1529,12 @@ namespace Elskom.Generic.Libs
         {
             var length = dictLength;
             var index = 0;
-
             if (dictionary == null || this.Status != INITSTATE)
             {
                 return ZlibCompressionState.ZSTREAMERROR;
             }
 
             strm.Adler = Adler32.Calculate(strm.Adler, dictionary, 0, dictLength);
-
             if (length < MINMATCH)
             {
                 return ZlibCompressionState.ZOK;
@@ -1631,7 +1555,6 @@ namespace Elskom.Generic.Libs
             // call of fill_window.
             this.InsH = this.Window[0] & 0xff;
             this.InsH = ((this.InsH << this.HashShift) ^ (this.Window[1] & 0xff)) & this.HashMask;
-
             for (var n = 0; n <= length - MINMATCH; n++)
             {
                 this.InsH = ((this.InsH << this.HashShift) ^ (this.Window[n + (MINMATCH - 1)] & 0xff)) & this.HashMask;
@@ -1645,7 +1568,6 @@ namespace Elskom.Generic.Libs
         internal ZlibCompressionState Compress(ZStream strm, ZlibFlushStrategy flush)
         {
             ZlibFlushStrategy old_flush;
-
             if (flush > ZlibFlushStrategy.ZFINISH || flush < 0)
             {
                 return ZlibCompressionState.ZSTREAMERROR;
@@ -1672,7 +1594,6 @@ namespace Elskom.Generic.Libs
             {
                 var header = (ZDEFLATED + ((this.WBits - 8) << 4)) << 8;
                 var level_flags = (((int)this.Level - 1) & 0xff) >> 1;
-
                 if (level_flags > 3)
                 {
                     level_flags = 3;
@@ -1685,7 +1606,6 @@ namespace Elskom.Generic.Libs
                 }
 
                 header += 31 - (header % 31);
-
                 this.Status = BUSYSTATE;
                 this.PutShortMSB(header);
 
@@ -1705,7 +1625,6 @@ namespace Elskom.Generic.Libs
                 strm.Flush_pending();
                 if (strm.AvailOut == 0)
                 {
-                    // System.out.println("  avail_out==0");
                     // Since avail_out is 0, deflate will be called again with
                     // more output space, but possibly with both pending and
                     // avail_in equal to zero. There won't be anything to do,
@@ -1791,7 +1710,6 @@ namespace Elskom.Generic.Libs
                         // as a special marker by inflate_sync().
                         if (flush == ZlibFlushStrategy.ZFULLFLUSH)
                         {
-                            // state.head[s.hash_size-1]=0;
                             for (var i = 0; i < this.HashSize; i++)
                             {
                                 // forget history
