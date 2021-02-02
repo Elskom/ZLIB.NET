@@ -73,8 +73,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </ProjectReference>
     <ProjectReference Include="..\GitInformation\src\GitInformation\Elskom.GitInformation.csproj" />
-    <PackageReference Include="System.Runtime" Condition="!$(TargetFramework.StartsWith('net4'))" Version="4.3.1" />
-    <PackageReference Include="System.Runtime.Extensions" Condition="!$(TargetFramework.StartsWith('net4'))" Version="4.3.1" />
   </ItemGroup>
 
   <Import Project="../CommonPackages.props" />
