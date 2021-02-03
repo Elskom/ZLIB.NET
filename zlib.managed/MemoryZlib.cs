@@ -68,7 +68,7 @@ namespace Elskom.Generic.Libs
             => Decompress(inData, out outData);
 
         // NEW: Now there are shortcut methods for compressing a file using the fully qualified path.
-        // NEW: Now can compress and decompress with stream outputs inside of byte arrays too.
+        // NEW: Now can compress and decompress with stream outputs instead of byte arrays too.
 
         /// <summary>
         /// Compresses data using the default compression level.
