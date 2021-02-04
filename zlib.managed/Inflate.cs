@@ -114,7 +114,7 @@ namespace Elskom.Generic.Libs
                         }
 
                         z.Istate.Mode = FLAG;
-                        goto case FLAG;
+                        break;
                     }
 
                     case FLAG:
@@ -143,7 +143,7 @@ namespace Elskom.Generic.Libs
                         }
 
                         z.Istate.Mode = DICT4;
-                        goto case DICT4;
+                        break;
                     }
 
                     case DICT4:
@@ -158,7 +158,7 @@ namespace Elskom.Generic.Libs
                         z.TotalIn++;
                         z.Istate.Need = ((z.INextIn[z.NextInIndex++] & 0xff) << 24) & unchecked((int)0xff000000L);
                         z.Istate.Mode = DICT3;
-                        goto case DICT3;
+                        break;
                     }
 
                     case DICT3:
@@ -173,7 +173,7 @@ namespace Elskom.Generic.Libs
                         z.TotalIn++;
                         z.Istate.Need += ((z.INextIn[z.NextInIndex++] & 0xff) << 16) & 0xff0000L;
                         z.Istate.Mode = DICT2;
-                        goto case DICT2;
+                        break;
                     }
 
                     case DICT2:
@@ -188,7 +188,7 @@ namespace Elskom.Generic.Libs
                         z.TotalIn++;
                         z.Istate.Need += ((z.INextIn[z.NextInIndex++] & 0xff) << 8) & 0xff00L;
                         z.Istate.Mode = DICT1;
-                        goto case DICT1;
+                        break;
                     }
 
                     case DICT1:
@@ -244,7 +244,7 @@ namespace Elskom.Generic.Libs
                         }
 
                         z.Istate.Mode = CHECK4;
-                        goto case CHECK4;
+                        break;
                     }
 
                     case CHECK4:
@@ -259,7 +259,7 @@ namespace Elskom.Generic.Libs
                         z.TotalIn++;
                         z.Istate.Need = ((z.INextIn[z.NextInIndex++] & 0xff) << 24) & unchecked((int)0xff000000L);
                         z.Istate.Mode = CHECK3;
-                        goto case CHECK3;
+                        break;
                     }
 
                     case CHECK3:
@@ -274,7 +274,7 @@ namespace Elskom.Generic.Libs
                         z.TotalIn++;
                         z.Istate.Need += ((z.INextIn[z.NextInIndex++] & 0xff) << 16) & 0xff0000L;
                         z.Istate.Mode = CHECK2;
-                        goto case CHECK2;
+                        break;
                     }
 
                     case CHECK2:
@@ -289,7 +289,7 @@ namespace Elskom.Generic.Libs
                         z.TotalIn++;
                         z.Istate.Need += ((z.INextIn[z.NextInIndex++] & 0xff) << 8) & 0xff00L;
                         z.Istate.Mode = CHECK1;
-                        goto case CHECK1;
+                        break;
                     }
 
                     case CHECK1:
@@ -312,7 +312,7 @@ namespace Elskom.Generic.Libs
                         }
 
                         z.Istate.Mode = DONE;
-                        goto case DONE;
+                        break;
                     }
 
                     case DONE:

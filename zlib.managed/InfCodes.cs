@@ -418,7 +418,7 @@ namespace Elskom.Generic.Libs
                         this.Tree = this.Ltree;
                         this.TreeIndex = this.LtreeIndex;
                         this.Mode = LEN;
-                        goto case LEN;
+                        break;
                     }
 
                     case LEN: // i: get length/literal/eob next
@@ -526,7 +526,7 @@ namespace Elskom.Generic.Libs
                         this.Tree = this.Dtree;
                         this.TreeIndex = this.DtreeIndex;
                         this.Mode = DIST;
-                        goto case DIST;
+                        break;
                     }
 
                     case DIST: // i: get distance next
@@ -616,7 +616,7 @@ namespace Elskom.Generic.Libs
                         b >>= j;
                         k -= j;
                         this.Mode = COPY;
-                        goto case COPY;
+                        break;
                     }
 
                     case COPY: // o: copying bytes in window, waiting for space
@@ -745,7 +745,7 @@ namespace Elskom.Generic.Libs
                         }
 
                         this.Mode = END;
-                        goto case END;
+                        break;
                     }
 
                     case END:

@@ -373,7 +373,7 @@ namespace Elskom.Generic.Libs
                         k -= 14;
                         this.index = 0;
                         this.mode = BTREE;
-                        goto case BTREE;
+                        break;
                     }
 
                     case BTREE:
@@ -434,7 +434,7 @@ namespace Elskom.Generic.Libs
 
                         this.index = 0;
                         this.mode = DTREE;
-                        goto case DTREE;
+                        break;
                     }
 
                     case DTREE:
@@ -569,7 +569,7 @@ namespace Elskom.Generic.Libs
                         this.codes = new InfCodes(bl[0], bd[0], this.hufts, tl[0], this.hufts, td[0]);
                         this.blens = null;
                         this.mode = CODES;
-                        goto case CODES;
+                        break;
                     }
 
                     case CODES:
@@ -600,7 +600,7 @@ namespace Elskom.Generic.Libs
                         }
 
                         this.mode = DRY;
-                        goto case DRY;
+                        break;
                     }
 
                     case DRY:
@@ -621,7 +621,7 @@ namespace Elskom.Generic.Libs
                         }
 
                         this.mode = DONE;
-                        goto case DONE;
+                        break;
                     }
 
                     case DONE:
