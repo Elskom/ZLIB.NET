@@ -6,9 +6,10 @@ on:
 
 jobs:
   build:
-
     runs-on: windows-latest
-
+    env:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
     steps:
     # clone the parent repository.
     - uses: actions/checkout@v2
@@ -25,12 +26,18 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.102
+    - name: Restore
+      run: |
+        cd Sdk/
+        dotnet restore
+      shell: bash
     - name: Build with dotnet
       run: |
         cd Sdk/GitBuildInfo
-        dotnet build --configuration Release
+        dotnet build --configuration Release --no-restore
         cd ..
-        dotnet build --configuration Release
+        dotnet build --configuration Release --no-restore
+      shell: bash
 
     # - name: Publish Pre-release
     #   id: publish_nuget
