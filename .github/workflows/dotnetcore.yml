@@ -39,9 +39,7 @@ jobs:
       shell: bash
     - name: Build with dotnet
       run: |
-        cd Sdk/GitBuildInfo
-        dotnet build --configuration Release --no-restore
-        cd ..
+        cd Sdk/
         dotnet build --configuration Release --no-restore
       shell: bash
 
