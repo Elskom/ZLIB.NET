@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: automerge
+        continue-on-error: true
         uses: "pascalgn/automerge-action@v0.13.0"
         env:
           # to get workflow invokes after merge.
