@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: automerge
         continue-on-error: true
-        uses: "pascalgn/automerge-action@v0.13.0"
+        uses: "pascalgn/automerge-action@v0.13.1"
         env:
           # to get workflow invokes after merge.
           GITHUB_TOKEN: "${{ secrets.GITSYNC_TOKEN }}"
