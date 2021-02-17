@@ -26,7 +26,7 @@ namespace Elskom.Generic.Libs
         private const int CODES = 6; // processing fixed or dynamic block
         private const int DRY = 7; // output remaining window bytes
         private const int DONE = 8; // finished last block, done
-        private const int BAD = 9; // ot a data error--stuck here
+        private const int BAD = 9; // got a data error--stuck here
 
         // And'ing with mask[n] masks the lower n bits
         private static readonly int[] InflateMask = new int[]

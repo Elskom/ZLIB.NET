@@ -127,7 +127,7 @@ namespace Elskom.Generic.Libs
         /// </exception>
         // discard returned adler32. The caller does not want it.
         public static void Compress(byte[] inData, out byte[] outData, ZlibCompression level)
-            => Compress(inData, out outData, level, out var adler32);
+            => Compress(inData, out outData, level, out var _);
 
         /// <summary>
         /// Compresses a file using the default compression level.
@@ -140,7 +140,7 @@ namespace Elskom.Generic.Libs
         /// </exception>
         // discard returned adler32. The caller does not want it.
         public static void Compress(string path, out byte[] outData, ZlibCompression level)
-            => Compress(File.ReadAllBytes(path), out outData, level, out var adler32);
+            => Compress(File.ReadAllBytes(path), out outData, level, out var _);
 
         /// <summary>
         /// Compresses data using an specific compression level.

@@ -46,11 +46,11 @@ namespace Elskom.Generic.Libs
             29, 5, 3, 5, 19, 5, 11, 5, 27, 5, 7, 5, 23, 5,
         };
 
-        internal static readonly StaticTree StaticLDesc = new StaticTree(StaticLtree, Tree.ExtraLbits, LITERALS + 1, LCODES, MAXBITS);
+        internal static readonly StaticTree StaticLDesc = new(StaticLtree, Tree.ExtraLbits, LITERALS + 1, LCODES, MAXBITS);
 
-        internal static readonly StaticTree StaticDDesc = new StaticTree(StaticDtree, Tree.ExtraDbits, 0, DCODES, MAXBITS);
+        internal static readonly StaticTree StaticDDesc = new(StaticDtree, Tree.ExtraDbits, 0, DCODES, MAXBITS);
 
-        internal static readonly StaticTree StaticBlDesc = new StaticTree(null, Tree.ExtraBlbits, 0, BLCODES, MAXBLBITS);
+        internal static readonly StaticTree StaticBlDesc = new(null, Tree.ExtraBlbits, 0, BLCODES, MAXBLBITS);
 
         private const int MAXBITS = 15;
         private const int BLCODES = 19;
