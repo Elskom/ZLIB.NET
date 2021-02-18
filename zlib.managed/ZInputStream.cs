@@ -55,11 +55,6 @@ namespace Elskom.Generic.Libs
         public Stream BaseStream { get; private set; }
 
         /// <summary>
-        /// Gets the base zlib stream.
-        /// </summary>
-        public ZStream Z { get; private set; } = new ZStream();
-
-        /// <summary>
         /// Gets or sets the flush mode for this stream.
         /// </summary>
         public virtual ZlibFlushStrategy FlushMode { get; set; }
@@ -98,6 +93,8 @@ namespace Elskom.Generic.Libs
 
         /// <inheritdoc/>
         public override long Position { get => this.BaseStream.Position; set => this.BaseStream.Position = value; }
+
+        internal ZStream Z { get; private set; } = new ZStream();
 
         /// <summary>
         /// Gets the stream's buffer size.
@@ -147,7 +144,14 @@ namespace Elskom.Generic.Libs
 
                 if (err != ZlibCompressionState.ZOK && err != ZlibCompressionState.ZSTREAMEND)
                 {
-                    throw new ZStreamException((this.Compress ? "de" : "in") + "flating: " + this.Z.Msg);
+                    if (this.Compress)
+                    {
+                        throw new NotPackableException($"deflating: {this.Z.Msg}");
+                    }
+                    else
+                    {
+                        throw new NotUnpackableException($"inflating: {this.Z.Msg}");
+                    }
                 }
 
                 if (this.Moreinput && this.Z.AvailOut == count)
@@ -197,7 +201,14 @@ namespace Elskom.Generic.Libs
                     err = this.Compress ? this.Z.Deflate(ZlibFlushStrategy.ZFINISH) : this.Z.Inflate(ZlibFlushStrategy.ZFINISH);
                     if (err != ZlibCompressionState.ZSTREAMEND && err != ZlibCompressionState.ZOK)
                     {
-                        throw new ZStreamException((this.Compress ? "de" : "in") + "flating: " + this.Z.Msg);
+                        if (this.Compress)
+                        {
+                            throw new NotPackableException($"deflating: {this.Z.Msg}");
+                        }
+                        else
+                        {
+                            throw new NotUnpackableException($"inflating: {this.Z.Msg}");
+                        }
                     }
 
                     if (this.Bufsize - this.Z.AvailOut > 0)
@@ -241,21 +252,6 @@ namespace Elskom.Generic.Libs
         /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
             => throw new NotImplementedException();
-
-        /// <summary>
-        /// Gets the stream's buffer.
-        /// </summary>
-        /// <returns>The stream's buffer.</returns>
-        protected byte[] GetBuf()
-            => this.pBuf;
-
-        /// <summary>
-        /// Gets the stream's single byte buffer value.
-        /// For reading 1 byte at a time.
-        /// </summary>
-        /// <returns>The stream's single byte buffer value.</returns>
-        protected byte[] GetBuf1()
-            => this.pBuf1;
 
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)

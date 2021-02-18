@@ -670,17 +670,6 @@ namespace Elskom.Generic.Libs
             this.hufts = null;
         }
 
-        internal void Set_dictionary(byte[] d, int start, int n)
-        {
-            Array.Copy(d, start, this.Window, 0, n);
-            this.Read = this.Write = n;
-        }
-
-        // Returns true if inflate is currently at the end of a block generated
-        // by Z_SYNC_FLUSH or Z_FULL_FLUSH.
-        internal ZlibCompressionState Sync_point()
-            => this.mode == LENS ? ZlibCompressionState.ZSTREAMEND : ZlibCompressionState.ZOK;
-
         // copy as much as possible from the sliding window to the output area
         internal ZlibCompressionState Inflate_flush(ZStream z, ZlibCompressionState r)
         {

@@ -8,10 +8,7 @@ namespace Elskom.Generic.Libs
     using System;
     using System.Diagnostics.CodeAnalysis;
 
-    /// <summary>
-    /// The zlib stream class.
-    /// </summary>
-    public sealed class ZStream
+    internal sealed class ZStream
     {
         [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "Only way this library works with this.")]
         internal byte[] INextIn;
@@ -20,106 +17,41 @@ namespace Elskom.Generic.Libs
         private const int MAXWBITS = 15; // 32K LZ77 window
         private const int DEFWBITS = MAXWBITS;
 
-        /// <summary>
-        /// Gets or sets the next input byte index.
-        /// </summary>
-        public int NextInIndex { get; set; }
+        internal int NextInIndex { get; set; }
 
-        /// <summary>
-        /// Gets or sets the number of bytes available at next_in.
-        /// </summary>
-        public int AvailIn { get; set; }
+        internal int AvailIn { get; set; }
 
-        /// <summary>
-        /// Gets or sets the total number of input bytes read so far.
-        /// </summary>
-        public long TotalIn { get; set; }
+        internal long TotalIn { get; set; }
 
-        /// <summary>
-        /// Gets or sets the next output byte index.
-        /// </summary>
-        public int NextOutIndex { get; set; }
+        internal int NextOutIndex { get; set; }
 
-        /// <summary>
-        /// Gets or sets the remaining free space at next_out.
-        /// </summary>
-        public int AvailOut { get; set; }
+        internal int AvailOut { get; set; }
 
-        /// <summary>
-        /// Gets or sets the total number of bytes output so far.
-        /// </summary>
-        public long TotalOut { get; set; }
+        internal long TotalOut { get; set; }
 
-        /// <summary>
-        /// Gets or sets the stream's error message.
-        /// </summary>
-        public string Msg { get; set; }
+        internal string Msg { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Stream Data's Adler32 checksum.
-        /// </summary>
-        public long Adler { get; set; }
+        internal long Adler { get; set; }
 
-        /// <summary>
-        /// Gets the current Deflate instance for this class.
-        /// </summary>
-        public Deflate Dstate { get; internal set; }
+        internal Deflate Dstate { get; set; }
 
-        /// <summary>
-        /// Gets the current Inflate instance for this class.
-        /// </summary>
-        public Inflate Istate { get; private set; }
+        internal Inflate Istate { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the data type to this instance of this class.
-        /// </summary>
         internal int DataType { get; set; } // best guess about the data type: ascii or binary
 
-        /// <summary>
-        /// Gets the next input byte.
-        /// </summary>
-        /// <returns>The next input byte.</returns>
-        public byte[] GetNextIn()
-            => this.INextIn;
-
-        /// <summary>
-        /// Gets the next output byte.
-        /// </summary>
-        /// <returns>The next output byte.</returns>
-        public byte[] GetNextOut()
-            => this.INextOut;
-
-        /// <summary>
-        /// Initializes decompression.
-        /// </summary>
-        /// <returns>The state.</returns>
-        public ZlibCompressionState InflateInit()
+        internal ZlibCompressionState InflateInit()
             => this.InflateInit(DEFWBITS);
 
-        /// <summary>
-        /// Initializes decompression.
-        /// </summary>
-        /// <param name="w">The window size.</param>
-        /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState InflateInit(int w)
+        internal ZlibCompressionState InflateInit(int w)
         {
             this.Istate = new Inflate();
             return this.Istate.InflateInit(this, w);
         }
 
-        /// <summary>
-        /// Decompresses data.
-        /// </summary>
-        /// <param name="f">The flush mode to use.</param>
-        /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState Inflate(ZlibFlushStrategy f)
+        internal ZlibCompressionState Inflate(ZlibFlushStrategy f)
             => this.Istate == null ? ZlibCompressionState.ZSTREAMERROR : Libs.Inflate.Decompress(this, f);
 
-        /// <summary>
-        /// Ends decompression.
-        /// </summary>
-        /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState InflateEnd()
+        internal ZlibCompressionState InflateEnd()
         {
             if (this.Istate == null)
             {
@@ -131,55 +63,19 @@ namespace Elskom.Generic.Libs
             return ret;
         }
 
-        /// <summary>
-        /// Syncs inflate.
-        /// </summary>
-        /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState InflateSync()
-            => this.Istate == null ? ZlibCompressionState.ZSTREAMERROR : Libs.Inflate.InflateSync(this);
-
-        /// <summary>
-        /// Sets the inflate dictionary.
-        /// </summary>
-        /// <param name="dictionary">The dictionary to use.</param>
-        /// <param name="dictLength">The dictionary length.</param>
-        /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState InflateSetDictionary(byte[] dictionary, int dictLength)
-            => this.Istate == null ? ZlibCompressionState.ZSTREAMERROR : Libs.Inflate.InflateSetDictionary(this, dictionary, dictLength);
-
-        /// <summary>
-        /// Initializes compression.
-        /// </summary>
-        /// <param name="level">The compression level to use.</param>
-        /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState DeflateInit(ZlibCompression level)
+        internal ZlibCompressionState DeflateInit(ZlibCompression level)
             => this.DeflateInit(level, MAXWBITS);
 
-        /// <summary>
-        /// Initializes compression.
-        /// </summary>
-        /// <param name="level">The compression level to use.</param>
-        /// <param name="bits">The window bits to use.</param>
-        /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState DeflateInit(ZlibCompression level, int bits)
+        internal ZlibCompressionState DeflateInit(ZlibCompression level, int bits)
         {
             this.Dstate = new Deflate();
             return this.Dstate.DeflateInit(this, level, bits);
         }
 
-        /// <summary>
-        /// Compress data.
-        /// </summary>
-        /// <param name="flush">The flush mode to use on the data.</param>
-        /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState Deflate(ZlibFlushStrategy flush)
+        internal ZlibCompressionState Deflate(ZlibFlushStrategy flush)
             => this.Dstate == null ? ZlibCompressionState.ZSTREAMERROR : this.Dstate.Compress(this, flush);
 
-        /// <summary>
-        /// Ends compression.
-        /// </summary>
-        /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState DeflateEnd()
+        internal ZlibCompressionState DeflateEnd()
         {
             if (this.Dstate == null)
             {
@@ -191,28 +87,7 @@ namespace Elskom.Generic.Libs
             return ret;
         }
 
-        /// <summary>
-        /// Sets the compression paramiters.
-        /// </summary>
-        /// <param name="level">The compression level to use.</param>
-        /// <param name="strategy">The strategy to use for compression.</param>
-        /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState DeflateParams(ZlibCompression level, ZlibCompressionStrategy strategy)
-            => this.Dstate == null ? ZlibCompressionState.ZSTREAMERROR : this.Dstate.DeflateParams(this, level, strategy);
-
-        /// <summary>
-        /// Sets the deflate dictionary.
-        /// </summary>
-        /// <param name="dictionary">The dictionary to use.</param>
-        /// <param name="dictLength">The dictionary length.</param>
-        /// <returns>The zlib status state.</returns>
-        public ZlibCompressionState DeflateSetDictionary(byte[] dictionary, int dictLength)
-            => this.Dstate == null ? ZlibCompressionState.ZSTREAMERROR : this.Dstate.DeflateSetDictionary(this, dictionary, dictLength);
-
-        /// <summary>
-        /// Frees everything.
-        /// </summary>
-        public void Free()
+        internal void Free()
         {
             this.INextIn = null;
             this.INextOut = null;

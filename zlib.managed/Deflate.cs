@@ -8,13 +8,9 @@ namespace Elskom.Generic.Libs
     using System;
     using System.Diagnostics.CodeAnalysis;
 
-    /// <summary>
-    /// Class for compressing data through zlib.
-    /// </summary>
-    public sealed class Deflate
+    internal sealed class Deflate
     {
         private const int MAXMEMLEVEL = 9;
-        private const int MAXWBITS = 15; // 32K LZ77 window
         private const int DEFMEMLEVEL = 8;
         private const int STORED = 0;
         private const int FAST = 1;
@@ -95,9 +91,6 @@ namespace Elskom.Generic.Libs
             string.Empty,
         };
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Deflate"/> class.
-        /// </summary>
         internal Deflate()
         {
             this.DynLtree = new short[HEAPSIZE * 2];
@@ -1314,7 +1307,7 @@ namespace Elskom.Generic.Libs
 
             if (this.MatchAvailable != 0)
             {
-                bflush = this.Tr_tally(0, this.Window[this.Strstart - 1] & 0xff);
+                _ = this.Tr_tally(0, this.Window[this.Strstart - 1] & 0xff);
                 this.MatchAvailable = 0;
             }
 
@@ -1404,9 +1397,6 @@ namespace Elskom.Generic.Libs
         internal ZlibCompressionState DeflateInit(ZStream strm, ZlibCompression level, int bits)
             => this.DeflateInit2(strm, level, ZDEFLATED, bits, DEFMEMLEVEL, ZlibCompressionStrategy.ZDEFAULTSTRATEGY);
 
-        internal ZlibCompressionState DeflateInit(ZStream strm, ZlibCompression level)
-            => this.DeflateInit(strm, level, MAXWBITS);
-
         [SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "Not code.")]
         internal ZlibCompressionState DeflateInit2(ZStream strm, ZlibCompression level, int method, int windowBits, int memLevel, ZlibCompressionStrategy strategy)
         {
@@ -1491,78 +1481,6 @@ namespace Elskom.Generic.Libs
 
             // free
             return this.Status == BUSYSTATE ? ZlibCompressionState.ZDATAERROR : ZlibCompressionState.ZOK;
-        }
-
-        internal ZlibCompressionState DeflateParams(ZStream strm, ZlibCompression level, ZlibCompressionStrategy strategy)
-        {
-            var err = ZlibCompressionState.ZOK;
-            if (level == ZlibCompression.ZDEFAULTCOMPRESSION)
-            {
-                level = (ZlibCompression)6;
-            }
-
-            if (level < ZlibCompression.ZNOCOMPRESSION || level > ZlibCompression.ZBESTCOMPRESSION || strategy < ZlibCompressionStrategy.ZDEFAULTSTRATEGY || strategy > ZlibCompressionStrategy.ZHUFFMANONLY)
-            {
-                return ZlibCompressionState.ZSTREAMERROR;
-            }
-
-            if (ConfigTable[(int)this.Level].Func != ConfigTable[(int)level].Func && strm.TotalIn != 0)
-            {
-                // Flush the last buffer:
-                err = strm.Deflate(ZlibFlushStrategy.ZPARTIALFLUSH);
-            }
-
-            if (this.Level != level)
-            {
-                this.Level = level;
-                this.MaxLazyMatch = ConfigTable[(int)this.Level].MaxLazy;
-                this.GoodMatch = ConfigTable[(int)this.Level].GoodLength;
-                this.NiceMatch = ConfigTable[(int)this.Level].NiceLength;
-                this.MaxChainLength = ConfigTable[(int)this.Level].MaxChain;
-            }
-
-            this.Strategy = strategy;
-            return err;
-        }
-
-        internal ZlibCompressionState DeflateSetDictionary(ZStream strm, byte[] dictionary, int dictLength)
-        {
-            var length = dictLength;
-            var index = 0;
-            if (dictionary == null || this.Status != INITSTATE)
-            {
-                return ZlibCompressionState.ZSTREAMERROR;
-            }
-
-            strm.Adler = Adler32.Calculate(strm.Adler, dictionary, 0, dictLength);
-            if (length < MINMATCH)
-            {
-                return ZlibCompressionState.ZOK;
-            }
-
-            if (length > this.WSize - MINLOOKAHEAD)
-            {
-                length = this.WSize - MINLOOKAHEAD;
-                index = dictLength - length; // use the tail of the dictionary
-            }
-
-            Array.Copy(dictionary, index, this.Window, 0, length);
-            this.Strstart = length;
-            this.BlockStart = length;
-
-            // Insert all strings in the hash table (except for the last two bytes).
-            // s->lookahead stays null, so s->ins_h will be recomputed at the next
-            // call of fill_window.
-            this.InsH = this.Window[0] & 0xff;
-            this.InsH = ((this.InsH << this.HashShift) ^ (this.Window[1] & 0xff)) & this.HashMask;
-            for (var n = 0; n <= length - MINMATCH; n++)
-            {
-                this.InsH = ((this.InsH << this.HashShift) ^ (this.Window[n + (MINMATCH - 1)] & 0xff)) & this.HashMask;
-                this.Prev[n & this.WMask] = this.Head[this.InsH];
-                this.Head[this.InsH] = (short)n;
-            }
-
-            return ZlibCompressionState.ZOK;
         }
 
         internal ZlibCompressionState Compress(ZStream strm, ZlibFlushStrategy flush)

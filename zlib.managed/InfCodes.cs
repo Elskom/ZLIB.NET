@@ -241,8 +241,6 @@ namespace Elskom.Generic.Libs
                                         {
                                             Array.Copy(s.Window, r, s.Window, q, e);
                                             q += e;
-                                            r += e;
-                                            e = 0;
                                         }
 
                                         r = 0; // copy rest from start of window
@@ -262,8 +260,6 @@ namespace Elskom.Generic.Libs
                                 {
                                     Array.Copy(s.Window, r, s.Window, q, c);
                                     q += c;
-                                    r += c;
-                                    c = 0;
                                 }
 
                                 break;
@@ -368,21 +364,15 @@ namespace Elskom.Generic.Libs
              // int[] t; // temporary pointer
             int tindex; // temporary pointer
             int e; // extra bits or operation
-            var b = 0; // bit buffer
-            var k = 0; // bits in bit buffer
-            var p = 0; // input data pointer
-            int n; // bytes available there
-            int q; // output window write pointer
-            int m; // bytes to end of window or read pointer
             int f; // pointer to copy strings from
 
             // copy input/output information to locals (UPDATE macro restores)
-            p = z.NextInIndex;
-            n = z.AvailIn;
-            b = s.Bitb;
-            k = s.Bitk;
-            q = s.Write;
-            m = q < s.Read ? s.Read - q - 1 : s.End - q;
+            var p = z.NextInIndex; // input data pointer
+            var n = z.AvailIn; // bytes available there
+            var b = s.Bitb; // bit buffer
+            var k = s.Bitk; // bits in bit buffer
+            var q = s.Write; // output window write pointer
+            var m = q < s.Read ? s.Read - q - 1 : s.End - q; // bytes to end of window or read pointer
 
             // process input and output based on current state
             while (true)

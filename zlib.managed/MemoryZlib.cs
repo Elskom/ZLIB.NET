@@ -156,39 +156,38 @@ namespace Elskom.Generic.Libs
         {
             try
             {
-                using (var tmpStrm = new MemoryStream(inData))
-                using (var outZStream = new ZOutputStream(outStream, level, true))
+                using var tmpStrm = new MemoryStream(inData);
+                using var outZStream = new ZOutputStream(outStream, level, true);
+                try
                 {
-                    try
-                    {
-                        tmpStrm.CopyTo(outZStream);
-                    }
-                    catch (ZStreamException ex)
-                    {
-                        // the compression or decompression failed.
-                        throw new NotPackableException("Compression Failed.", ex);
-                    }
-
-                    try
-                    {
-                        outZStream.Flush();
-                    }
-                    catch (StackOverflowException ex)
-                    {
-                        throw new NotPackableException("Compression Failed due to a stack overflow.", ex);
-                    }
-
-                    try
-                    {
-                        outZStream.Finish();
-                    }
-                    catch (ZStreamException ex)
-                    {
-                        throw new NotPackableException("Compression Failed.", ex);
-                    }
-
-                    adler32 = (uint)(outZStream.Z.Adler & 0xffff);
+                    tmpStrm.CopyTo(outZStream);
                 }
+                catch (NotPackableException ex)
+                {
+                    // the compression or decompression failed.
+                    throw new NotPackableException("Compression Failed.", ex);
+                }
+
+                try
+                {
+                    outZStream.Flush();
+                }
+                catch (StackOverflowException ex)
+                {
+                    throw new NotPackableException("Compression Failed due to a stack overflow.", ex);
+                }
+
+                try
+                {
+                    outZStream.Finish();
+                }
+                catch (NotPackableException ex)
+                {
+                    throw new NotPackableException("Compression Failed.", ex);
+                }
+
+                var contents = tmpStrm.ToArray();
+                adler32 = (uint)(ZlibGetAdler32(contents, 0, contents.Length) & 0xffff);
             }
             catch (IOException ex)
             {
@@ -208,11 +207,9 @@ namespace Elskom.Generic.Libs
         /// </exception>
         public static void Compress(byte[] inData, out byte[] outData, ZlibCompression level, out uint adler32)
         {
-            using (var outMemoryStream = new MemoryStream())
-            {
-                Compress(inData, outMemoryStream, level, out adler32);
-                outData = outMemoryStream.ToArray();
-            }
+            using var outMemoryStream = new MemoryStream();
+            Compress(inData, outMemoryStream, level, out adler32);
+            outData = outMemoryStream.ToArray();
         }
 
         /// <summary>
@@ -240,23 +237,21 @@ namespace Elskom.Generic.Libs
         {
             try
             {
-                using (var tmpStrm = new MemoryStream(inData))
-                using (var outZStream = new ZOutputStream(outStream, true))
+                using var tmpStrm = new MemoryStream(inData);
+                using var outZStream = new ZOutputStream(outStream, true);
+                try
                 {
-                    try
-                    {
-                        tmpStrm.CopyTo(outZStream);
-                        outZStream.Flush();
-                        outZStream.Finish();
-                    }
-                    catch (ZStreamException ex)
-                    {
-                        throw new NotUnpackableException("Decompression Failed.", ex);
-                    }
-                    catch (StackOverflowException ex)
-                    {
-                        throw new NotPackableException("Decompression Failed due to a stack overflow.", ex);
-                    }
+                    tmpStrm.CopyTo(outZStream);
+                    outZStream.Flush();
+                    outZStream.Finish();
+                }
+                catch (NotUnpackableException ex)
+                {
+                    throw new NotUnpackableException("Decompression Failed.", ex);
+                }
+                catch (StackOverflowException ex)
+                {
+                    throw new NotPackableException("Decompression Failed due to a stack overflow.", ex);
                 }
             }
             catch (IOException ex)
@@ -275,11 +270,9 @@ namespace Elskom.Generic.Libs
         /// </exception>
         public static void Decompress(byte[] inData, out byte[] outData)
         {
-            using (var outMemoryStream = new MemoryStream())
-            {
-                Decompress(inData, outMemoryStream);
-                outData = outMemoryStream.ToArray();
-            }
+            using var outMemoryStream = new MemoryStream();
+            Decompress(inData, outMemoryStream);
+            outData = outMemoryStream.ToArray();
         }
 
         /// <summary>
@@ -331,5 +324,24 @@ namespace Elskom.Generic.Libs
             => data == null
             ? throw new ArgumentNullException(nameof(data))
             : data.Length >= 2 && data[0] == 0x78 && (data[1] == 0x01 || data[1] == 0x5E || data[1] == 0x9C || data[1] == 0xDA);
+
+        // NEW: Zlib version check.
+
+        /// <summary>
+        /// Gets the version to zlib.managed.
+        /// </summary>
+        /// <returns>The version string to this version of zlib.managed.</returns>
+        public static string ZlibVersion()
+            => typeof(MemoryZlib).Assembly.GetName().Version.ToString(3);
+
+        /// <summary>
+        /// Gets the Adler32 checksum of the input data at the specified index and length.
+        /// </summary>
+        /// <param name="data">The data to checksum.</param>
+        /// <param name="index">The index of which to checksum.</param>
+        /// <param name="length">The length of the data to checksum.</param>
+        /// <returns>The Adler32 hash of the input data.</returns>
+        public static long ZlibGetAdler32(byte[] data, int index, int length)
+            => Adler32.Calculate(Adler32.Calculate(0, null, 0, 0), data, index, length);
     }
 }
