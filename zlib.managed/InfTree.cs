@@ -311,7 +311,7 @@ namespace Elskom.Generic.Libs
                             x[h] = i; // save pattern for backing up
                             r[0] = (byte)j; // bits in this table
                             r[1] = (byte)l; // bits to dump before this table
-                            j = SupportClass.URShift(i, w - l);
+                            j = i >= 0 ? i >> (w - l) : (i >> (w - l)) + (2 << ~(w - l));
                             r[2] = q - u[h - 1] - j; // offset to this table
                             Array.Copy(r, 0, hp, (u[h - 1] + j) * 3, 3); // connect to last table
                         }
@@ -340,13 +340,13 @@ namespace Elskom.Generic.Libs
 
                     // fill code-like entries with r
                     f = 1 << (k - w);
-                    for (j = SupportClass.URShift(i, w); j < z; j += f)
+                    for (j = i >= 0 ? i >> w : (i >> w) + (2 << ~w); j < z; j += f)
                     {
                         Array.Copy(r, 0, hp, (q + j) * 3, 3);
                     }
 
                     // backwards increment the k-bit code i
-                    for (j = 1 << (k - 1); (i & j) != 0; j = SupportClass.URShift(j, 1))
+                    for (j = 1 << (k - 1); (i & j) != 0; j = j >= 0 ? j >> 1 : (j >> 1) + (2 << ~1))
                     {
                         i ^= j;
                     }

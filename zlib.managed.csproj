@@ -15,8 +15,19 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Copyright>Copyright (c) 2018-2021</Copyright>
     <Description>A cleaned up and bug fixed version of zlib.net. This is also planned to be updated frequently if needed too.</Description>
-    <PackageReleaseNotes>Code fixes to expose more members and fix null data output.</PackageReleaseNotes>
-    <Version>1.1.5</Version>
+    <PackageReleaseNotes>Changes:
+- Reduced TFM's on the package from 19 to 4.
+- Embed the pdb inside of the binaries.
+- Inflate, Deflate, ZlibCompressionState, ZlibCompressionStrategy, ZlibFlushStrategy, and ZStream are now internal.
+- Added ZlibVersion() and ZlibGetAdler32() to the MemoryZlib class.
+- Removed deprecated methods inside of the MemoryZlib class.
+- Removed the ZlibConst and the SupportClass classes as they became useless.
+- ZStreamException has been removed entirely, NotPackableException and NotUnpackableException makes it more clear if error happened during compressing or decompressing anyway.
+- use simplified using statements instead of blocks in MemoryZlib since all the methods do is use the streams to do compression/decompression.
+- Removed unused internal/private methods as well too (dead code).
+- Removed ZImputStream and ZOutputStream and replacted it with ZlibStream.
+- Added Compression levels 2 ~ 8 to ZlibCompression.</PackageReleaseNotes>
+    <Version>2.0.0</Version>
     <Version Condition="'$(GITHUB_ACTIONS)' == 'true' AND !$(GITHUB_REF.StartsWith('refs/tags/'))">$(Version)-preview-$(GITHUB_RUN_ID)</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>

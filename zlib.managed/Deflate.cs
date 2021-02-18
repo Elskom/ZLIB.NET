@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, Els_kom org.
+﻿// Copyright (c) 2018-2021, Els_kom org.
 // https://github.com/Elskom/
 // All rights reserved.
 // license: see LICENSE for more details.
@@ -387,7 +387,7 @@ namespace Elskom.Generic.Libs
                 min_count = 3;
             }
 
-            tree[((max_code + 1) * 2) + 1] = (short)SupportClass.Identity(0xffff); // guard
+            tree[((max_code + 1) * 2) + 1] = unchecked((short)0xffffL); // guard
             for (n = 0; n <= max_code; n++)
             {
                 curlen = nextlen;
@@ -577,7 +577,7 @@ namespace Elskom.Generic.Libs
         internal void Put_short(int w)
         {
             this.Put_byte((byte)w);
-            this.Put_byte((byte)SupportClass.URShift(w, 8));
+            this.Put_byte((byte)(w >= 0 ? w >> 8 : (w >> 8) + (2 << ~8)));
         }
 
         internal void PutShortMSB(int b)
@@ -597,7 +597,7 @@ namespace Elskom.Generic.Libs
                 var val = value_Renamed;
                 this.BiBuf = (short)((ushort)this.BiBuf | (ushort)((val << this.BiValid) & 0xffff));
                 this.Put_short(this.BiBuf);
-                this.BiBuf = (short)SupportClass.URShift(val, BufSize - this.BiValid);
+                this.BiBuf = (short)(val >= 0 ? val >> (BufSize - this.BiValid) : (val >> (BufSize - this.BiValid)) + (2 << ~(BufSize - this.BiValid)));
                 this.BiValid += len - BufSize;
             }
             else
@@ -640,7 +640,7 @@ namespace Elskom.Generic.Libs
         // the current block must be flushed.
         internal bool Tr_tally(int dist, int lc)
         {
-            this.PendingBuf[this.DBuf + (this.LastLit * 2)] = (byte)SupportClass.URShift(dist, 8);
+            this.PendingBuf[this.DBuf + (this.LastLit * 2)] = (byte)(dist >= 0 ? dist >> 8 : (dist >> 8) + (2 << ~8));
             this.PendingBuf[this.DBuf + (this.LastLit * 2) + 1] = (byte)dist;
             this.PendingBuf[this.LBuf + this.LastLit] = (byte)lc;
             this.LastLit++;
@@ -659,7 +659,7 @@ namespace Elskom.Generic.Libs
                 this.DynDtree[Tree.D_code(dist) * 2]++;
             }
 
-            if ((this.LastLit & 0x1fff) == 0 && this.Level > (ZlibCompression)2)
+            if ((this.LastLit & 0x1fff) == 0 && this.Level > ZlibCompression.ZLEVEL2)
             {
                 // Compute an upper bound for the compressed length
                 var out_length = this.LastLit * 8;
@@ -670,7 +670,7 @@ namespace Elskom.Generic.Libs
                     out_length = (int)(out_length + (this.DynDtree[dcode * 2] * (5L + Tree.ExtraDbits[dcode])));
                 }
 
-                out_length = SupportClass.URShift(out_length, 3);
+                out_length = out_length >= 0 ? out_length >> 3 : (out_length >> 3) + (2 << ~3);
                 if (this.Matches < this.LastLit / 2 && out_length < in_length / 2)
                 {
                     return true;
@@ -739,6 +739,7 @@ namespace Elskom.Generic.Libs
         // binary if more than 20% of the bytes are <= 6 or >= 128, ascii otherwise.
         // IN assertion: the fields freq of dyn_ltree are set and the total of all
         // frequencies does not exceed 64K (to fit in an int on 16 bit machines).
+        [SuppressMessage("Major Code Smell", "S3358:Ternary operators should not be nested", Justification = "🖕")]
         internal void Set_data_type()
         {
             var n = 0;
@@ -762,7 +763,7 @@ namespace Elskom.Generic.Libs
                 n++;
             }
 
-            this.DataType = (byte)(bin_freq > SupportClass.URShift(ascii_freq, 2) ? ZBINARY : ZASCII);
+            this.DataType = (byte)(bin_freq > (ascii_freq >= 0 ? ascii_freq >> 2 : (ascii_freq >> 2) + (2 << ~2)) ? ZBINARY : ZASCII);
         }
 
         // Flush the bit buffer, keeping at most 7 bits in it.
@@ -777,7 +778,7 @@ namespace Elskom.Generic.Libs
             else if (this.BiValid >= 8)
             {
                 this.Put_byte((byte)this.BiBuf);
-                this.BiBuf = (short)SupportClass.URShift(this.BiBuf, 8);
+                this.BiBuf = (short)(this.BiBuf >= 0 ? this.BiBuf >> 8 : (this.BiBuf >> 8) + (2 << ~8));
                 this.BiValid -= 8;
             }
         }
@@ -925,8 +926,8 @@ namespace Elskom.Generic.Libs
                 max_blindex = this.Build_bl_tree();
 
                 // Determine the best encoding. Compute first the block length in bytes
-                opt_lenb = SupportClass.URShift(this.OptLen + 3 + 7, 3);
-                static_lenb = SupportClass.URShift(this.StaticLen + 3 + 7, 3);
+                opt_lenb = (this.OptLen + 3 + 7) >= 0 ? (this.OptLen + 3 + 7) >> 3 : ((this.OptLen + 3 + 7) >> 3) + (2 << ~3);
+                static_lenb = (this.StaticLen + 3 + 7) >= 0 ? (this.StaticLen + 3 + 7) >> 3 : ((this.StaticLen + 3 + 7) >> 3) + (2 << ~3);
                 if (static_lenb <= opt_lenb)
                 {
                     opt_lenb = static_lenb;
@@ -1404,7 +1405,7 @@ namespace Elskom.Generic.Libs
             strm.Msg = null;
             if (level == ZlibCompression.ZDEFAULTCOMPRESSION)
             {
-                level = (ZlibCompression)6;
+                level = ZlibCompression.ZLEVEL6;
             }
 
             if (windowBits < 0)
@@ -1530,7 +1531,7 @@ namespace Elskom.Generic.Libs
                 // Save the adler32 of the preset dictionary:
                 if (this.Strstart != 0)
                 {
-                    this.PutShortMSB((int)SupportClass.URShift(strm.Adler, 16));
+                    this.PutShortMSB((int)(strm.Adler >= 0 ? strm.Adler >> 16 : (strm.Adler >> 16) + (2L << ~16)));
                     this.PutShortMSB((int)(strm.Adler & 0xffff));
                 }
 
@@ -1656,7 +1657,7 @@ namespace Elskom.Generic.Libs
             }
 
             // Write the zlib trailer (adler32)
-            this.PutShortMSB((int)SupportClass.URShift(strm.Adler, 16));
+            this.PutShortMSB((int)(strm.Adler >= 0 ? strm.Adler >> 16 : (strm.Adler >> 16) + (2L << ~16)));
             this.PutShortMSB((int)(strm.Adler & 0xffff));
             strm.Flush_pending();
 

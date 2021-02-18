@@ -26,8 +26,43 @@ namespace Elskom.Generic.Libs
         ZBESTSPEED,
 
         /// <summary>
+        /// Compression level 2.
+        /// </summary>
+        ZLEVEL2,
+
+        /// <summary>
+        /// Compression level 3.
+        /// </summary>
+        ZLEVEL3,
+
+        /// <summary>
+        /// Compression level 4.
+        /// </summary>
+        ZLEVEL4,
+
+        /// <summary>
+        /// Compression level 5.
+        /// </summary>
+        ZLEVEL5,
+
+        /// <summary>
+        /// Compression level 6.
+        /// </summary>
+        ZLEVEL6,
+
+        /// <summary>
+        /// Compression level 7.
+        /// </summary>
+        ZLEVEL7,
+
+        /// <summary>
+        /// Compression level 8.
+        /// </summary>
+        ZLEVEL8,
+
+        /// <summary>
         /// the best compression level.
         /// </summary>
-        ZBESTCOMPRESSION = 9,
+        ZBESTCOMPRESSION,
     }
 }

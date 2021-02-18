@@ -437,7 +437,7 @@ namespace Elskom.Generic.Libs
                         }
 
                         tindex = (this.TreeIndex + (b & InflateMask[j])) * 3;
-                        b = SupportClass.URShift(b, this.Tree[tindex + 1]);
+                        b = b >= 0 ? b >> this.Tree[tindex + 1] : (b >> this.Tree[tindex + 1]) + (2 << ~this.Tree[tindex + 1]);
                         k -= this.Tree[tindex + 1];
                         e = this.Tree[tindex];
                         if (e == 0)

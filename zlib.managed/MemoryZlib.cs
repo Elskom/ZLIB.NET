@@ -157,7 +157,7 @@ namespace Elskom.Generic.Libs
             try
             {
                 using var tmpStrm = new MemoryStream(inData);
-                using var outZStream = new ZOutputStream(outStream, level, true);
+                using var outZStream = new ZlibStream(level);
                 try
                 {
                     tmpStrm.CopyTo(outZStream);
@@ -165,6 +165,11 @@ namespace Elskom.Generic.Libs
                 catch (NotPackableException ex)
                 {
                     // the compression or decompression failed.
+                    throw new NotPackableException("Compression Failed.", ex);
+                }
+                catch (NotSupportedException ex)
+                {
+                    // the compression failed because of a support failure.
                     throw new NotPackableException("Compression Failed.", ex);
                 }
 
@@ -186,8 +191,8 @@ namespace Elskom.Generic.Libs
                     throw new NotPackableException("Compression Failed.", ex);
                 }
 
-                var contents = tmpStrm.ToArray();
-                adler32 = (uint)(ZlibGetAdler32(contents, 0, contents.Length) & 0xffff);
+                outZStream.WriteTo(outStream);
+                adler32 = (uint)(outZStream.GetAdler32() & 0xffff);
             }
             catch (IOException ex)
             {
@@ -237,11 +242,10 @@ namespace Elskom.Generic.Libs
         {
             try
             {
-                using var tmpStrm = new MemoryStream(inData);
-                using var outZStream = new ZOutputStream(outStream, true);
+                using var outZStream = new ZlibStream(inData);
                 try
                 {
-                    tmpStrm.CopyTo(outZStream);
+                    outZStream.CopyTo(outStream);
                     outZStream.Flush();
                     outZStream.Finish();
                 }
@@ -252,6 +256,11 @@ namespace Elskom.Generic.Libs
                 catch (StackOverflowException ex)
                 {
                     throw new NotPackableException("Decompression Failed due to a stack overflow.", ex);
+                }
+                catch (NotSupportedException ex)
+                {
+                    // the decompression failed because of a support failure.
+                    throw new NotPackableException("Compression Failed.", ex);
                 }
             }
             catch (IOException ex)
@@ -333,6 +342,8 @@ namespace Elskom.Generic.Libs
         /// <returns>The version string to this version of zlib.managed.</returns>
         public static string ZlibVersion()
             => typeof(MemoryZlib).Assembly.GetName().Version.ToString(3);
+
+        // NEW: Adler32 hasher.
 
         /// <summary>
         /// Gets the Adler32 checksum of the input data at the specified index and length.

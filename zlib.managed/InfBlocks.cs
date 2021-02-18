@@ -155,15 +155,15 @@ namespace Elskom.Generic.Libs
 
                         t = b & 7;
                         this.last = t & 1;
-                        switch (SupportClass.URShift(t, 1))
+                        switch (t >= 0 ? t >> 1 : (t >> 1) + (2 << ~1))
                         {
                             case 0: // stored
                             {
-                                b = SupportClass.URShift(b, 3);
+                                b = b >= 0 ? b >> 3 : (b >> 3) + (2 << ~3);
                                 k -= 3;
 
                                 t = k & 7; // go to byte boundary
-                                b = SupportClass.URShift(b, t);
+                                b = b >= 0 ? b >> t : (b >> t) + (2 << ~t);
                                 k -= t;
 
                                 this.mode = LENS; // get length of stored block
@@ -178,7 +178,7 @@ namespace Elskom.Generic.Libs
                                 var td = new int[1][];
                                 _ = InfTree.Inflate_trees_fixed(bl, bd, tl, td);
                                 this.codes = new InfCodes(bl[0], bd[0], tl[0], td[0]);
-                                b = SupportClass.URShift(b, 3);
+                                b = b >= 0 ? b >> 3 : (b >> 3) + (2 << ~3);
                                 k -= 3;
                                 this.mode = CODES;
                                 break;
@@ -186,7 +186,7 @@ namespace Elskom.Generic.Libs
 
                             case 2: // dynamic
                             {
-                                b = SupportClass.URShift(b, 3);
+                                b = b >= 0 ? b >> 3 : (b >> 3) + (2 << ~3);
                                 k -= 3;
                                 this.mode = TABLE;
                                 break;
@@ -194,7 +194,7 @@ namespace Elskom.Generic.Libs
 
                             case 3: // illegal
                             {
-                                b = SupportClass.URShift(b, 3);
+                                b = b >= 0 ? b >> 3 : (b >> 3) + (2 << ~3);
                                 k -= 3;
                                 this.mode = BAD;
                                 z.Msg = "invalid block type";
@@ -236,7 +236,7 @@ namespace Elskom.Generic.Libs
                             k += 8;
                         }
 
-                        if ((SupportClass.URShift(~b, 16) & 0xffff) != (b & 0xffff))
+                        if (((~b >= 0 ? ~b >> 16 : (~b >> 16) + (2 << ~16)) & 0xffff) != (b & 0xffff))
                         {
                             this.mode = BAD;
                             z.Msg = "invalid stored block lengths";
@@ -369,7 +369,7 @@ namespace Elskom.Generic.Libs
 
                         t = 258 + (t & 0x1f) + ((t >> 5) & 0x1f);
                         this.blens = new int[t];
-                        b = SupportClass.URShift(b, 14);
+                        b = b >= 0 ? b >> 14 : (b >> 14) + (2 << ~14);
                         k -= 14;
                         this.index = 0;
                         this.mode = BTREE;
@@ -378,7 +378,7 @@ namespace Elskom.Generic.Libs
 
                     case BTREE:
                     {
-                        while (this.index < 4 + SupportClass.URShift(this.table, 10))
+                        while (this.index < 4 + (this.table >= 0 ? this.table >> 10 : (this.table >> 10) + (2 << ~10)))
                         {
                             while (k < 3)
                             {
@@ -403,7 +403,7 @@ namespace Elskom.Generic.Libs
                             }
 
                             this.blens[Border[this.index++]] = b & 7;
-                            b = SupportClass.URShift(b, 3);
+                            b = b >= 0 ? b >> 3 : (b >> 3) + (2 << ~3);
                             k -= 3;
                         }
 
@@ -475,7 +475,7 @@ namespace Elskom.Generic.Libs
                             c = this.hufts[((this.tb[0] + (b & InflateMask[t])) * 3) + 2];
                             if (c < 16)
                             {
-                                b = SupportClass.URShift(b, t);
+                                b = b >= 0 ? b >> t : (b >> t) + (2 << ~t);
                                 k -= t;
                                 this.blens[this.index++] = c;
                             }
@@ -506,10 +506,10 @@ namespace Elskom.Generic.Libs
                                     k += 8;
                                 }
 
-                                b = SupportClass.URShift(b, t);
+                                b = b >= 0 ? b >> t : (b >> t) + (2 << ~t);
                                 k -= t;
                                 j += b & InflateMask[i];
-                                b = SupportClass.URShift(b, i);
+                                b = b >= 0 ? b >> i : (b >> i) + (2 << ~i);
                                 k -= i;
                                 i = this.index;
                                 t = this.table;

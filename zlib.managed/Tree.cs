@@ -1,10 +1,12 @@
-// Copyright (c) 2018-2021, Els_kom org.
+﻿// Copyright (c) 2018-2021, Els_kom org.
 // https://github.com/Elskom/
 // All rights reserved.
 // license: see LICENSE for more details.
 
 namespace Elskom.Generic.Libs
 {
+    using System.Diagnostics.CodeAnalysis;
+
     internal sealed class Tree
     {
         // Bit length codes must not exceed MAX_BL_BITS bits
@@ -134,8 +136,9 @@ namespace Elskom.Generic.Libs
         // Mapping from a distance to a distance code. dist is the distance - 1 and
         // must not have side effects. _dist_code[256] and _dist_code[257] are never
         // used.
+        [SuppressMessage("Major Code Smell", "S3358:Ternary operators should not be nested", Justification = "🖕")]
         internal static int D_code(int dist)
-            => dist < 256 ? DistCode[dist] : DistCode[256 + SupportClass.URShift(dist, 7)];
+            => dist < 256 ? DistCode[dist] : DistCode[256 + (dist >= 0 ? dist >> 7 : (dist >> 7) + (2 << ~7))];
 
         // Generate the codes for a given tree and bit counts (which need not be
         // optimal).
@@ -181,12 +184,12 @@ namespace Elskom.Generic.Libs
             do
             {
                 res |= code & 1;
-                code = SupportClass.URShift(code, 1);
+                code = code >= 0 ? code >> 1 : (code >> 1) + (2 << ~1);
                 res <<= 1;
             }
             while (--len > 0);
 
-            return SupportClass.URShift(res, 1);
+            return res >= 0 ? res >> 1 : (res >> 1) + (2 << ~1);
         }
 
         // Compute the optimal bit lengths for a tree and update the total bit length

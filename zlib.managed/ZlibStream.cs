@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, Els_kom org.
+﻿// Copyright (c) 2018-2021, Els_kom org.
 // https://github.com/Elskom/
 // All rights reserved.
 // license: see LICENSE for more details.
@@ -9,64 +9,40 @@ namespace Elskom.Generic.Libs
     using System.IO;
 
     /// <summary>
-    /// Class that provices a zlib output stream that supports
-    /// compression and decompression.
+    /// Class that provides support for zlib compression/decompression for an input stream.
+    /// This is an sealed class.
     /// </summary>
-    public class ZOutputStream : Stream
+    public sealed class ZlibStream : MemoryStream
     {
-        private readonly bool keepOpen;
         private readonly byte[] pBuf1 = new byte[1];
         private byte[] pBuf;
         private bool isDisposed;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ZOutputStream"/> class.
+        /// Initializes a new instance of the <see cref="ZlibStream"/> class for decompression.
         /// </summary>
-        /// <param name="output">The output stream.</param>
-        public ZOutputStream(Stream output)
+        /// <param name="input">The input data.</param>
+        public ZlibStream(byte[] input)
+            : base(input)
         {
-            this.BaseStream = output;
             this.InitBlock();
             _ = this.Z.InflateInit();
             this.Compress = false;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ZOutputStream"/> class.
-        /// </summary>
-        /// <param name="output">The output stream.</param>
-        /// <param name="keepOpen">Optionally keep the output stream open when this stream is closed.</param>
-        public ZOutputStream(Stream output, bool keepOpen)
-            : this(output)
-            => this.keepOpen = keepOpen;
+        // cannot input data as this is to decompress (the data would come in from the Write() method).
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ZOutputStream"/> class.
+        /// Initializes a new instance of the <see cref="ZlibStream"/> class for compression.
         /// </summary>
-        /// <param name="output">The output stream.</param>
         /// <param name="level">The compression level for the data to compress.</param>
-        public ZOutputStream(Stream output, ZlibCompression level)
+        public ZlibStream(ZlibCompression level)
+            : base()
         {
-            this.BaseStream = output;
             this.InitBlock();
             _ = this.Z.DeflateInit(level);
             this.Compress = true;
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ZOutputStream"/> class.
-        /// </summary>
-        /// <param name="output">The output stream.</param>
-        /// <param name="level">The compression level for the data to compress.</param>
-        /// <param name="keepOpen">Optionally keep the output stream open when this stream is closed.</param>
-        public ZOutputStream(Stream output, ZlibCompression level, bool keepOpen)
-            : this(output, level)
-            => this.keepOpen = keepOpen;
-
-        /// <summary>
-        /// Gets the base stream that this stream contains.
-        /// </summary>
-        public Stream BaseStream { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the stream is finished.
@@ -74,42 +50,108 @@ namespace Elskom.Generic.Libs
         public bool IsFinished { get; private set; }
 
         /// <summary>
-        /// Gets or sets the flush mode for this stream.
+        /// Gets or sets a value indicating whether there is more input.
         /// </summary>
-        public virtual ZlibFlushStrategy FlushMode { get; set; }
+        public bool Moreinput { get; set; }
 
         /// <summary>Gets the total number of bytes input so far.</summary>
-        public virtual long TotalIn => this.Z.TotalIn;
+        public long TotalIn => this.Z.TotalIn;
 
         /// <summary>Gets the total number of bytes output so far.</summary>
-        public virtual long TotalOut => this.Z.TotalOut;
+        public long TotalOut => this.Z.TotalOut;
 
         /// <inheritdoc/>
-        public override bool CanRead => false;
+        public override bool CanRead => !this.Compress && base.CanRead;
 
         /// <inheritdoc/>
         public override bool CanSeek => false;
 
         /// <inheritdoc/>
-        public override bool CanWrite => true;
-
-        /// <inheritdoc/>
-        public override long Length => this.BaseStream.Length;
-
-        /// <inheritdoc/>
-        public override long Position { get => this.BaseStream.Position; set => this.BaseStream.Position = value; }
+        public override bool CanWrite => this.Compress && base.CanWrite;
 
         internal ZStream Z { get; private set; } = new ZStream();
 
-        /// <summary>
-        /// Gets the stream's buffer size.
-        /// </summary>
-        protected internal int Bufsize { get; private set; } = 4096;
+        internal int Bufsize { get; private set; } = 8192;
 
-        /// <summary>
-        /// Gets a value indicating whether this stream is setup for compression.
-        /// </summary>
-        protected internal bool Compress { get; private set; }
+        internal bool Compress { get; private set; }
+
+        internal ZlibFlushStrategy FlushMode { get; set; }
+
+        /// <inheritdoc/>
+        public override int ReadByte()
+            => this.Read(this.pBuf1, 0, 1) == 0 ? -1 : this.pBuf1[0] & 0xFF;
+
+        /// <inheritdoc/>
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            if (!this.CanRead)
+            {
+                throw new NotSupportedException(this.Compress ? "Read() should not be used to Compress. Use Write() instead. If decompressing is intended pass the input stream without an compression level argument." : "The stream cannot be Read.");
+            }
+
+            if (count == 0)
+            {
+                return 0;
+            }
+
+            ZlibCompressionState err;
+            this.Z.INextOut = buffer;
+            this.Z.NextOutIndex = offset;
+            this.Z.AvailOut = count;
+            do
+            {
+                if (this.Z.AvailIn == 0 && !this.Moreinput)
+                {
+                    // if buffer is empty and more input is avaiable, refill it
+                    this.Z.NextInIndex = 0;
+                    if (this.pBuf.Length == 0)
+                    {
+                        this.Z.AvailIn = 0;
+                    }
+
+                    var receiver = new byte[this.pBuf.Length];
+                    var bytesRead = base.Read(receiver, 0, this.Bufsize);
+                    if (bytesRead == 0)
+                    {
+                        this.Z.AvailIn = -1;
+                    }
+
+                    for (var i = 0; i < 0 + bytesRead; i++)
+                    {
+                        this.pBuf[i] = receiver[i];
+                    }
+
+                    if (this.Z.AvailIn == -1)
+                    {
+                        this.Z.AvailIn = 0;
+                        this.Moreinput = true;
+                    }
+                }
+
+                err = this.Z.Inflate(this.FlushMode);
+                if (this.Moreinput && err == ZlibCompressionState.ZBUFERROR)
+                {
+                    // we must always return 0 if nothing can be read (and when no exceptions are thrown) to not break any Async stream methods too.
+                    // see issue: https://github.com/Elskom/zlib.managed/issues/136/ for more details.
+                    return 0;
+                }
+
+                if (err != ZlibCompressionState.ZOK && err != ZlibCompressionState.ZSTREAMEND)
+                {
+                    throw new NotUnpackableException($"inflating: {this.Z.Msg}");
+                }
+
+                if (this.Moreinput && this.Z.AvailOut == count)
+                {
+                    // we must always return 0 if nothing can be read (and when no exceptions are thrown) to not break any Async stream methods too.
+                    // see issue: https://github.com/Elskom/zlib.managed/issues/136/ for more details.
+                    return 0;
+                }
+            }
+            while (this.Z.AvailOut > 0 && err == ZlibCompressionState.ZOK);
+
+            return count - this.Z.AvailOut;
+        }
 
         /// <inheritdoc/>
         public override void WriteByte(byte value)
@@ -140,6 +182,11 @@ namespace Elskom.Generic.Libs
         /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
         {
+            if (!this.CanWrite)
+            {
+                throw new NotSupportedException(!this.Compress ? "Write() should not be used to decompress. Use Read() instead. If Compressing is intended pass the output stream with a compression level argument." : "The stream cannot be Written to.");
+            }
+
             if (buffer == null)
             {
                 throw new ArgumentNullException(nameof(buffer));
@@ -161,20 +208,13 @@ namespace Elskom.Generic.Libs
                 this.Z.INextOut = this.pBuf;
                 this.Z.NextOutIndex = 0;
                 this.Z.AvailOut = this.Bufsize;
-                err = this.Compress ? this.Z.Deflate(this.FlushMode) : this.Z.Inflate(this.FlushMode);
+                err = this.Z.Deflate(this.FlushMode);
                 if (err != ZlibCompressionState.ZOK && err != ZlibCompressionState.ZSTREAMEND)
                 {
-                    if (this.Compress)
-                    {
-                        throw new NotPackableException($"deflating: {this.Z.Msg}");
-                    }
-                    else
-                    {
-                        throw new NotUnpackableException($"inflating: {this.Z.Msg}");
-                    }
+                    throw new NotPackableException($"deflating: {this.Z.Msg}");
                 }
 
-                this.BaseStream.Write(this.pBuf, 0, this.Bufsize - this.Z.AvailOut);
+                /*this.BaseStream*/base.Write(this.pBuf, 0, this.Bufsize - this.Z.AvailOut);
                 if (!this.Compress && this.Z.AvailIn == 0 && this.Z.AvailOut == 0)
                 {
                     break;
@@ -191,7 +231,7 @@ namespace Elskom.Generic.Libs
         /// <summary>
         /// Finishes the stream.
         /// </summary>
-        public virtual void Finish()
+        public void Finish()
         {
             if (!this.IsFinished)
             {
@@ -216,7 +256,7 @@ namespace Elskom.Generic.Libs
 
                     if (this.Bufsize - this.Z.AvailOut > 0)
                     {
-                        this.BaseStream.Write(this.pBuf, 0, this.Bufsize - this.Z.AvailOut);
+                        base.Write(this.pBuf, 0, this.Bufsize - this.Z.AvailOut);
                     }
 
                     if (err == ZlibCompressionState.ZSTREAMEND)
@@ -225,6 +265,7 @@ namespace Elskom.Generic.Libs
                     }
                 }
                 while (this.Z.AvailIn > 0 || this.Z.AvailOut == 0);
+
                 try
                 {
                     this.Flush();
@@ -241,28 +282,27 @@ namespace Elskom.Generic.Libs
         /// <summary>
         /// Ends the compression or decompression on the stream.
         /// </summary>
-        public virtual void EndStream()
+        public void EndStream()
         {
             _ = this.Compress ? this.Z.DeflateEnd() : this.Z.InflateEnd();
             this.Z.Free();
             this.Z = null;
         }
 
-        /// <inheritdoc/>
-        public override void Flush()
-            => this.BaseStream.Flush();
+        /// <summary>
+        /// Gets the Adler32 hash of the stream's data.
+        /// </summary>
+        /// <returns>The Adler32 hash of the stream's data.</returns>
+        public long GetAdler32()
+            => this.Z.Adler;
 
         /// <inheritdoc/>
-        public override int Read(byte[] buffer, int offset, int count)
-            => 0;
-
-        /// <inheritdoc/>
-        public override long Seek(long offset, SeekOrigin origin)
+        public override long Seek(long offset, SeekOrigin loc)
             => 0;
 
         /// <inheritdoc/>
         public override void SetLength(long value)
-            => throw new NotImplementedException();
+            => throw new NotSupportedException("Setting length is not supported.");
 
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
@@ -289,10 +329,7 @@ namespace Elskom.Generic.Libs
                 }
 
                 this.isDisposed = true;
-                if (!this.keepOpen)
-                {
-                    base.Dispose(disposing);
-                }
+                base.Dispose(disposing);
             }
         }
 
