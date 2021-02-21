@@ -28,7 +28,7 @@ jobs:
           # to get workflow invokes after merge.
           GITHUB_TOKEN: "${{ secrets.GITSYNC_TOKEN }}"
           MERGE_REMOVE_LABELS: "automerge"
-          MERGE_METHOD: "squash"
+          MERGE_METHOD: "rebase"
           MERGE_RETRIES: "6"
           MERGE_RETRY_SLEEP: "10000"
           UPDATE_METHOD: "rebase"
