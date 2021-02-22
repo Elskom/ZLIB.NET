@@ -19,63 +19,6 @@ namespace Elskom.Generic.Libs
         /// <param name="inData">The original input data.</param>
         /// <param name="outData">The compressed output data.</param>
         /// <param name="adler32">The output adler32 of the data.</param>
-        /// <exception cref="NotPackableException">Thrown when the stream Errors in any way.</exception>
-        [Obsolete("Use MemoryZlib.Compress(byte[], out byte[], out int) instead. This will be removed in a future release.")]
-        public static void CompressData(byte[] inData, out byte[] outData, out uint adler32)
-            => Compress(inData, out outData, out adler32);
-
-        /// <summary>
-        /// Compresses data using the default compression level.
-        /// </summary>
-        /// <param name="inData">The original input data.</param>
-        /// <param name="outData">The compressed output data.</param>
-        /// <exception cref="NotPackableException">Thrown when the stream Errors in any way.</exception>
-        [Obsolete("Use MemoryZlib.Compress(byte[], out byte[]) instead. This will be removed in a future release.")]
-        public static void CompressData(byte[] inData, out byte[] outData)
-            => Compress(inData, out outData);
-
-        /// <summary>
-        /// Compresses data using an specific compression level.
-        /// </summary>
-        /// <param name="inData">The original input data.</param>
-        /// <param name="outData">The compressed output data.</param>
-        /// <param name="level">The compression level to use.</param>
-        /// <exception cref="NotPackableException">Thrown when the stream Errors in any way.</exception>
-        [Obsolete("Use MemoryZlib.Compress(byte[], out byte[], ZlibCompression) instead. This will be removed in a future release.")]
-        public static void CompressData(byte[] inData, out byte[] outData, ZlibCompression level)
-            => Compress(inData, out outData, level);
-
-        /// <summary>
-        /// Compresses data using an specific compression level.
-        /// </summary>
-        /// <param name="inData">The original input data.</param>
-        /// <param name="outData">The compressed output data.</param>
-        /// <param name="level">The compression level to use.</param>
-        /// <param name="adler32">The output adler32 of the data.</param>
-        /// <exception cref="NotPackableException">Thrown when the stream Errors in any way.</exception>
-        [Obsolete("Use MemoryZlib.Compress(byte[], out byte[], ZlibCompression, out int) instead. This will be removed in a future release.")]
-        public static void CompressData(byte[] inData, out byte[] outData, ZlibCompression level, out uint adler32)
-            => Compress(inData, out outData, level, out adler32);
-
-        /// <summary>
-        /// Decompresses data.
-        /// </summary>
-        /// <param name="inData">The compressed input data.</param>
-        /// <param name="outData">The decompressed output data.</param>
-        /// <exception cref="NotUnpackableException">Thrown when the stream Errors in any way.</exception>
-        [Obsolete("Use MemoryZlib.Decompress(byte[], out byte[]) instead. This will be removed in a future release.")]
-        public static void DecompressData(byte[] inData, out byte[] outData)
-            => Decompress(inData, out outData);
-
-        // NEW: Now there are shortcut methods for compressing a file using the fully qualified path.
-        // NEW: Now can compress and decompress with stream outputs instead of byte arrays too.
-
-        /// <summary>
-        /// Compresses data using the default compression level.
-        /// </summary>
-        /// <param name="inData">The original input data.</param>
-        /// <param name="outData">The compressed output data.</param>
-        /// <param name="adler32">The output adler32 of the data.</param>
         /// <exception cref="NotPackableException">
         /// Thrown when the internal compression stream errors in any way.
         /// </exception>
