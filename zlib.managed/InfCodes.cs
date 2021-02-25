@@ -6,7 +6,6 @@
 namespace Elskom.Generic.Libs
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
 
     internal sealed class InfCodes
     {
@@ -92,7 +91,6 @@ namespace Elskom.Generic.Libs
         // (the maximum string length) and number of input bytes available
         // at least ten.  The ten bytes are six bytes for the longest length/
         // distance pair plus four bytes for overloading the bit buffer.
-        [SuppressMessage("Major Code Smell", "S1854:Unused assignments should be removed", Justification = "Needed for inflate.")]
         internal static ZlibCompressionState Inflate_fast(int bl, int bd, int[] tl, int tl_index, int[] td, int td_index, InfBlocks s, ZStream z)
         {
             int t; // temporary pointer
@@ -356,7 +354,6 @@ namespace Elskom.Generic.Libs
             return ZlibCompressionState.ZOK;
         }
 
-        [SuppressMessage("Major Code Smell", "S1854:Unused assignments should be removed", Justification = "Needed for inflate.")]
         internal ZlibCompressionState Proc(InfBlocks s, ZStream z, ZlibCompressionState r)
         {
             int j; // temporary storage

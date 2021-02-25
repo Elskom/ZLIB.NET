@@ -6,7 +6,6 @@
 namespace Elskom.Generic.Libs
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
 
     internal sealed class InfBlocks
     {
@@ -104,8 +103,6 @@ namespace Elskom.Generic.Libs
             }
         }
 
-        [SuppressMessage("Major Code Smell", "S3358:Ternary operators should not be nested", Justification = "Needed for inflate.")]
-        [SuppressMessage("Major Code Smell", "S1854:Unused assignments should be removed", Justification = "Needed for inflate.")]
         internal ZlibCompressionState Proc(ZStream z, ZlibCompressionState r)
         {
             int t; // temporary storage

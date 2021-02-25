@@ -6,7 +6,6 @@
 namespace Elskom.Generic.Libs
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
 
     internal sealed class Deflate
     {
@@ -739,7 +738,6 @@ namespace Elskom.Generic.Libs
         // binary if more than 20% of the bytes are <= 6 or >= 128, ascii otherwise.
         // IN assertion: the fields freq of dyn_ltree are set and the total of all
         // frequencies does not exceed 64K (to fit in an int on 16 bit machines).
-        [SuppressMessage("Major Code Smell", "S3358:Ternary operators should not be nested", Justification = "🖕")]
         internal void Set_data_type()
         {
             var n = 0;
@@ -828,7 +826,6 @@ namespace Elskom.Generic.Libs
         // only for the level=0 compression option.
         // NOTE: this function should be optimized to avoid extra copying from
         // window to pending_buf.
-        [SuppressMessage("Major Code Smell", "S3358:Ternary operators should not be nested", Justification = "Needed for deflate.")]
         internal int Deflate_stored(ZlibFlushStrategy flush)
         {
             // Stored blocks are limited to 0xffff bytes, pending_buf is limited
@@ -1070,7 +1067,6 @@ namespace Elskom.Generic.Libs
         // This function does not perform lazy evaluation of matches and inserts
         // new strings in the dictionary only for unmatched strings or for short
         // matches. It is used only for the fast compression options.
-        [SuppressMessage("Major Code Smell", "S3358:Ternary operators should not be nested", Justification = "Needed for deflate.")]
         internal int Deflate_fast(ZlibFlushStrategy flush)
         {
             // short hash_head = 0; // head of the hash chain
@@ -1178,8 +1174,6 @@ namespace Elskom.Generic.Libs
         // Same as above, but achieves better compression. We use a lazy
         // evaluation for matches: a match is finally adopted only if there is
         // no better match at the next window position.
-        [SuppressMessage("Major Code Smell", "S1854:Unused assignments should be removed", Justification = "Needed for deflate.")]
-        [SuppressMessage("Major Code Smell", "S3358:Ternary operators should not be nested", Justification = "Needed for deflate.")]
         internal int Deflate_slow(ZlibFlushStrategy flush)
         {
             // short hash_head = 0;    // head of hash chain
@@ -1316,8 +1310,6 @@ namespace Elskom.Generic.Libs
             return this.Strm.AvailOut == 0 ? flush == ZlibFlushStrategy.ZFINISH ? FinishStarted : NeedMore : flush == ZlibFlushStrategy.ZFINISH ? FinishDone : BlockDone;
         }
 
-        [SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "Not code.")]
-        [SuppressMessage("Major Bug", "S1764:Identical expressions should not be used on both sides of a binary operator", Justification = "Needed for deflate.")]
         internal int Longest_match(int cur_match)
         {
             var chain_length = this.MaxChainLength; // max hash chain length
@@ -1369,8 +1361,8 @@ namespace Elskom.Generic.Libs
                 scan += 2;
                 match++;
 
-                // We check for insufficient lookahead only every 8th comparison;
-                // the 256th check will be made at strstart+258.
+                // We check for insufficient lookahead only every 8th
+                // comparison; the 256th check will be made at strstart+258.
                 do
                 {
                     // nothing here.
@@ -1398,7 +1390,6 @@ namespace Elskom.Generic.Libs
         internal ZlibCompressionState DeflateInit(ZStream strm, ZlibCompression level, int bits)
             => this.DeflateInit2(strm, level, ZDEFLATED, bits, DEFMEMLEVEL, ZlibCompressionStrategy.ZDEFAULTSTRATEGY);
 
-        [SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "Not code.")]
         internal ZlibCompressionState DeflateInit2(ZStream strm, ZlibCompression level, int method, int windowBits, int memLevel, ZlibCompressionStrategy strategy)
         {
             var noheader = 0;
@@ -1434,8 +1425,9 @@ namespace Elskom.Generic.Libs
             this.Head = new short[this.HashSize];
             this.LitBufsize = 1 << (memLevel + 6); // 16K elements by default
 
-            // We overlay pending_buf and d_buf+l_buf. This works since the average
-            // output size for (length, distance) codes is <= 24 bits.
+            // We overlay pending_buf and d_buf+l_buf. This works since the
+            // average output size for (length, distance) codes
+            // is <= 24 bits.
             this.PendingBuf = new byte[this.LitBufsize * 4];
             this.PendingBufSize = this.LitBufsize * 4;
             this.DBuf = this.LitBufsize;
@@ -1446,7 +1438,6 @@ namespace Elskom.Generic.Libs
             return this.DeflateReset(strm);
         }
 
-        [SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "Not code.")]
         internal ZlibCompressionState DeflateReset(ZStream strm)
         {
             strm.TotalIn = strm.TotalOut = 0;
@@ -1456,7 +1447,8 @@ namespace Elskom.Generic.Libs
             this.PendingOut = 0;
             if (this.Noheader < 0)
             {
-                this.Noheader = 0; // was set to -1 by deflate(..., Z_FINISH);
+                // was set to -1 by deflate(..., Z_FINISH).
+                this.Noheader = 0;
             }
 
             this.Status = this.Noheader != 0 ? BUSYSTATE : INITSTATE;
