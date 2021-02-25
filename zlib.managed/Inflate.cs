@@ -5,8 +5,6 @@
 
 namespace Elskom.Generic.Libs
 {
-    using System.Diagnostics.CodeAnalysis;
-
     internal sealed class Inflate
     {
         // preset dictionary flag in zlib header
@@ -61,7 +59,6 @@ namespace Elskom.Generic.Libs
             return ZlibCompressionState.ZOK;
         }
 
-        [SuppressMessage("Major Code Smell", "S1854:Unused assignments should be removed", Justification = "Needed for inflate.")]
         internal static ZlibCompressionState Decompress(ZStream z, ZlibFlushStrategy f)
         {
             if (z == null || z.Istate == null || z.INextIn == null)

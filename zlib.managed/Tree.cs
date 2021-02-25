@@ -5,8 +5,6 @@
 
 namespace Elskom.Generic.Libs
 {
-    using System.Diagnostics.CodeAnalysis;
-
     internal sealed class Tree
     {
         // Bit length codes must not exceed MAX_BL_BITS bits
@@ -136,7 +134,6 @@ namespace Elskom.Generic.Libs
         // Mapping from a distance to a distance code. dist is the distance - 1 and
         // must not have side effects. _dist_code[256] and _dist_code[257] are never
         // used.
-        [SuppressMessage("Major Code Smell", "S3358:Ternary operators should not be nested", Justification = "🖕")]
         internal static int D_code(int dist)
             => dist < 256 ? DistCode[dist] : DistCode[256 + (dist >= 0 ? dist >> 7 : (dist >> 7) + (2 << ~7))];
 

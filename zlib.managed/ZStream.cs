@@ -6,16 +6,15 @@
 namespace Elskom.Generic.Libs
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
 
     internal sealed class ZStream
     {
-        [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "Only way this library works with this.")]
-        internal byte[] INextIn;
-        [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "Only way this library works with this.")]
-        internal byte[] INextOut;
         private const int MAXWBITS = 15; // 32K LZ77 window
         private const int DEFWBITS = MAXWBITS;
+
+        internal byte[] INextIn { get; set; }
+
+        internal byte[] INextOut { get; set; }
 
         internal int NextInIndex { get; set; }
 
