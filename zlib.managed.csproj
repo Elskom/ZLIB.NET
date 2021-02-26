@@ -83,7 +83,7 @@
   </ItemGroup>
 
   <Import Project="../CommonPackages.props" />
-  <Import Project="../Elskom.Sdk/build/Elskom.Sdk.targets" />
+  <Import Project="../Sdk/GitBuildInfo.Task.targets" />
 
   <Target Name="GitBuildInfo" BeforeTargets="PrepareForBuild">
     <GitBuildInfoTask OutputPath="$(ProjectDir)\GitAssemblyInfo.cs" AssemblyType="Elskom.Generic.Libs.MemoryZlib" IsGeneric="false" />
