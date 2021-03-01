@@ -8,6 +8,7 @@ jobs:
     env:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
+      DOTNET_NOLOGO: true
     steps:
     - uses: actions-ecosystem/action-remove-labels@v1.1.0
       continue-on-error: true
