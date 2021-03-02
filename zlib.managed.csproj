@@ -28,7 +28,6 @@
 - Removed ZImputStream and ZOutputStream and replacted it with ZlibStream.
 - Added Compression levels 2 ~ 8 to ZlibCompression.</PackageReleaseNotes>
     <Version>2.0.0</Version>
-    <Version Condition="'$(GITHUB_ACTIONS)' == 'true' AND !$(GITHUB_REF.StartsWith('refs/tags/'))">$(Version)-preview-$(GITHUB_RUN_ID)</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <PublishDocumentationFile>true</PublishDocumentationFile>
