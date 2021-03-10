@@ -100,44 +100,26 @@ namespace Elskom.Generic.Libs
             try
             {
                 using var tmpStrm = new MemoryStream(inData);
-                using var outZStream = new ZlibStream(level);
-                try
-                {
-                    tmpStrm.CopyTo(outZStream);
-                }
-                catch (NotPackableException ex)
-                {
-                    // the compression or decompression failed.
-                    throw new NotPackableException("Compression Failed.", ex);
-                }
-                catch (NotSupportedException ex)
-                {
-                    // the compression failed because of a support failure.
-                    throw new NotPackableException("Compression Failed.", ex);
-                }
-
-                try
-                {
-                    outZStream.Flush();
-                }
-                catch (StackOverflowException ex)
-                {
-                    throw new NotPackableException("Compression Failed due to a stack overflow.", ex);
-                }
-
-                try
-                {
-                    outZStream.Finish();
-                }
-                catch (NotPackableException ex)
-                {
-                    throw new NotPackableException("Compression Failed.", ex);
-                }
-
-                outZStream.WriteTo(outStream);
+                using var outZStream = new ZlibStream(outStream, level, true);
+                tmpStrm.CopyTo(outZStream);
+                outZStream.Flush();
+                outZStream.Finish();
                 adler32 = (uint)(outZStream.GetAdler32() & 0xffff);
             }
-            catch (IOException ex)
+            catch (NotPackableException ex)
+            {
+                throw new NotPackableException("Compression Failed.", ex);
+            }
+            catch (NotSupportedException ex)
+            {
+                // the compression failed because of a support failure.
+                throw new NotPackableException("Compression Failed.", ex);
+            }
+            catch (StackOverflowException ex)
+            {
+                throw new NotPackableException("Compression Failed due to a stack overflow.", ex);
+            }
+            catch (IOException ex) when (ex is not NotPackableException)
             {
                 throw new NotPackableException("Compression Failed.", ex);
             }
@@ -186,27 +168,24 @@ namespace Elskom.Generic.Libs
             try
             {
                 using var outZStream = new ZlibStream(inData);
-                try
-                {
-                    outZStream.CopyTo(outStream);
-                    outZStream.Flush();
-                    outZStream.Finish();
-                }
-                catch (NotUnpackableException ex)
-                {
-                    throw new NotUnpackableException("Decompression Failed.", ex);
-                }
-                catch (StackOverflowException ex)
-                {
-                    throw new NotPackableException("Decompression Failed due to a stack overflow.", ex);
-                }
-                catch (NotSupportedException ex)
-                {
-                    // the decompression failed because of a support failure.
-                    throw new NotPackableException("Compression Failed.", ex);
-                }
+                outZStream.CopyTo(outStream);
+                outZStream.Flush();
+                outZStream.Finish();
             }
-            catch (IOException ex)
+            catch (NotUnpackableException ex)
+            {
+                throw new NotUnpackableException("Decompression Failed.", ex);
+            }
+            catch (StackOverflowException ex)
+            {
+                throw new NotPackableException("Decompression Failed due to a stack overflow.", ex);
+            }
+            catch (NotSupportedException ex)
+            {
+                // the decompression failed because of a support failure.
+                throw new NotPackableException("Compression Failed.", ex);
+            }
+            catch (IOException ex) when (ex is not NotUnpackableException)
             {
                 throw new NotUnpackableException("Decompression Failed.", ex);
             }

@@ -1,10 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="PublishRefAssemblies.Sdk/1.0.2">
 
   <PropertyGroup>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
-    <TargetFrameworks>netcoreapp2.0;net5.0;netstandard2.0;net40</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;net5.0;net40</TargetFrameworks>
     <AssemblyName>zlib.managed</AssemblyName>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>latest</LangVersion>
     <Company>Els_kom org.</Company>
     <Authors>Els_kom org.</Authors>
@@ -16,12 +15,12 @@
     <Copyright>Copyright (c) 2018-2021</Copyright>
     <Description>A cleaned up and bug fixed version of zlib.net. This is also planned to be updated frequently if needed too.</Description>
     <PackageReleaseNotes>Changes:
-- Reduced TFM's on the package from 19 to 4.
+- Reduced TFM's on the package from 19 to 3.
 - Embed the pdb inside of the binaries.
-- Inflate, Deflate, ZlibCompressionState, ZlibCompressionStrategy, ZlibFlushStrategy, and ZStream are now internal.
+- Inflate, Deflate, ZlibCompressionState, ZlibCompressionStrategy, and ZlibFlushStrategy are now internal.
 - Added ZlibVersion() and ZlibGetAdler32() to the MemoryZlib class.
 - Removed deprecated methods inside of the MemoryZlib class.
-- Removed the ZlibConst and the SupportClass classes as they became useless.
+- Removed the ZlibConst, ZStream and the SupportClass classes as they became useless.
 - ZStreamException has been removed entirely, NotPackableException and NotUnpackableException makes it more clear if error happened during compressing or decompressing anyway.
 - use simplified using statements instead of blocks in MemoryZlib since all the methods do is use the streams to do compression/decompression.
 - Removed unused internal/private methods as well too (dead code).
@@ -29,8 +28,6 @@
 - Added Compression levels 2 ~ 8 to ZlibCompression.</PackageReleaseNotes>
     <Version>2.0.0</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
-    <PublishDocumentationFile>true</PublishDocumentationFile>
     <NoWarn>$(NoWarn);NU5104;NU5118</NoWarn>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Elskom.snk</AssemblyOriginatorKeyFile>
@@ -49,21 +46,14 @@
     <!-- <IncludeBuildOutput>true</IncludeBuildOutput> -->
     <!-- <SymbolPackageFormat>snupkg</SymbolPackageFormat> -->
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <OutputPath>bin\Any CPU\$(Configuration)\</OutputPath>
+    <DocumentationFile>bin\Any CPU\$(Configuration)\zlib.managed.xml</DocumentationFile>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <OutputPath>bin\Any CPU\Debug\</OutputPath>
-    <DocumentationFile>bin\Any CPU\Debug\zlib.managed.xml</DocumentationFile>
-    <DebugType>embedded</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>bin\Any CPU\Release\</OutputPath>
-    <DocumentationFile>bin\Any CPU\Release\zlib.managed.xml</DocumentationFile>
-    <DebugType>embedded</DebugType>
-    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup>

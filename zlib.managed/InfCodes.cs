@@ -91,7 +91,7 @@ namespace Elskom.Generic.Libs
         // (the maximum string length) and number of input bytes available
         // at least ten.  The ten bytes are six bytes for the longest length/
         // distance pair plus four bytes for overloading the bit buffer.
-        internal static ZlibCompressionState Inflate_fast(int bl, int bd, int[] tl, int tl_index, int[] td, int td_index, InfBlocks s, ZStream z)
+        internal static ZlibCompressionState Inflate_fast(int bl, int bd, int[] tl, int tl_index, int[] td, int td_index, InfBlocks s, ZlibStream z)
         {
             int t; // temporary pointer
             int[] tp; // temporary pointer
@@ -354,7 +354,7 @@ namespace Elskom.Generic.Libs
             return ZlibCompressionState.ZOK;
         }
 
-        internal ZlibCompressionState Proc(InfBlocks s, ZStream z, ZlibCompressionState r)
+        internal ZlibCompressionState Proc(InfBlocks s, ZlibStream z, ZlibCompressionState r)
         {
             int j; // temporary storage
 
