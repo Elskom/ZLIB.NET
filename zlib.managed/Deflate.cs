@@ -97,7 +97,7 @@ namespace Elskom.Generic.Libs
             this.BlTree = new short[((2 * BLCODES) + 1) * 2]; // Huffman tree for bit lengths
         }
 
-        internal ZStream Strm { get; private set; } // pointer back to this zlib stream
+        internal ZlibStream Strm { get; private set; } // pointer back to this zlib stream
 
         internal int Status { get; private set; } // as the name implies
 
@@ -1387,10 +1387,10 @@ namespace Elskom.Generic.Libs
             return best_len <= this.Lookahead ? best_len : this.Lookahead;
         }
 
-        internal ZlibCompressionState DeflateInit(ZStream strm, ZlibCompression level, int bits)
+        internal ZlibCompressionState DeflateInit(ZlibStream strm, ZlibCompression level, int bits)
             => this.DeflateInit2(strm, level, ZDEFLATED, bits, DEFMEMLEVEL, ZlibCompressionStrategy.ZDEFAULTSTRATEGY);
 
-        internal ZlibCompressionState DeflateInit2(ZStream strm, ZlibCompression level, int method, int windowBits, int memLevel, ZlibCompressionStrategy strategy)
+        internal ZlibCompressionState DeflateInit2(ZlibStream strm, ZlibCompression level, int method, int windowBits, int memLevel, ZlibCompressionStrategy strategy)
         {
             var noheader = 0;
             strm.Msg = null;
@@ -1438,7 +1438,7 @@ namespace Elskom.Generic.Libs
             return this.DeflateReset(strm);
         }
 
-        internal ZlibCompressionState DeflateReset(ZStream strm)
+        internal ZlibCompressionState DeflateReset(ZlibStream strm)
         {
             strm.TotalIn = strm.TotalOut = 0;
             strm.Msg = null;
@@ -1476,7 +1476,7 @@ namespace Elskom.Generic.Libs
             return this.Status == BUSYSTATE ? ZlibCompressionState.ZDATAERROR : ZlibCompressionState.ZOK;
         }
 
-        internal ZlibCompressionState Compress(ZStream strm, ZlibFlushStrategy flush)
+        internal ZlibCompressionState Compress(ZlibStream strm, ZlibFlushStrategy flush)
         {
             ZlibFlushStrategy old_flush;
             if (flush > ZlibFlushStrategy.ZFINISH || flush < 0)

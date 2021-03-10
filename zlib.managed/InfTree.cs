@@ -368,7 +368,7 @@ namespace Elskom.Generic.Libs
             return y != 0 && g != 1 ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
         }
 
-        internal static ZlibCompressionState Inflate_trees_bits(int[] c, int[] bb, int[] tb, int[] hp, ZStream z)
+        internal static ZlibCompressionState Inflate_trees_bits(int[] c, int[] bb, int[] tb, int[] hp, ZlibStream z)
         {
             ZlibCompressionState r;
             var hn = new int[1]; // hufts used in space
@@ -387,7 +387,7 @@ namespace Elskom.Generic.Libs
             return r;
         }
 
-        internal static ZlibCompressionState Inflate_trees_dynamic(int nl, int nd, int[] c, int[] bl, int[] bd, int[] tl, int[] td, int[] hp, ZStream z)
+        internal static ZlibCompressionState Inflate_trees_dynamic(int nl, int nd, int[] c, int[] bl, int[] bd, int[] tl, int[] td, int[] hp, ZlibStream z)
         {
             ZlibCompressionState r;
             var hn = new int[1]; // hufts used in space

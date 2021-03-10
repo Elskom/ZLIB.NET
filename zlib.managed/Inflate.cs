@@ -45,7 +45,7 @@ namespace Elskom.Generic.Libs
 
         internal InfBlocks Blocks { get; private set; } // current inflate_blocks state
 
-        internal static ZlibCompressionState InflateReset(ZStream z)
+        internal static ZlibCompressionState InflateReset(ZlibStream z)
         {
             if (z == null || z.Istate == null)
             {
@@ -59,7 +59,7 @@ namespace Elskom.Generic.Libs
             return ZlibCompressionState.ZOK;
         }
 
-        internal static ZlibCompressionState Decompress(ZStream z, ZlibFlushStrategy f)
+        internal static ZlibCompressionState Decompress(ZlibStream z, ZlibFlushStrategy f)
         {
             if (z == null || z.Istate == null || z.INextIn == null)
             {
@@ -306,7 +306,7 @@ namespace Elskom.Generic.Libs
             }
         }
 
-        internal ZlibCompressionState InflateEnd(ZStream z)
+        internal ZlibCompressionState InflateEnd(ZlibStream z)
         {
             if (this.Blocks != null)
             {
@@ -317,7 +317,7 @@ namespace Elskom.Generic.Libs
             return ZlibCompressionState.ZOK;
         }
 
-        internal ZlibCompressionState InflateInit(ZStream z, int w)
+        internal ZlibCompressionState InflateInit(ZlibStream z, int w)
         {
             z.Msg = null;
             this.Blocks = null;

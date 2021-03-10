@@ -54,7 +54,7 @@ namespace Elskom.Generic.Libs
         /// <param name="z">Zlib Stream.</param>
         /// <param name="checkfn">check function.</param>
         /// <param name="w">Window size.</param>
-        internal InfBlocks(ZStream z, object checkfn, int w)
+        internal InfBlocks(ZlibStream z, object checkfn, int w)
         {
             this.hufts = new int[MANY * 3];
             this.Window = new byte[w];
@@ -76,7 +76,7 @@ namespace Elskom.Generic.Libs
 
         internal int Write { get; set; } // window write pointer
 
-        internal void Reset(ZStream z, long[] c)
+        internal void Reset(ZlibStream z, long[] c)
         {
             if (c != null)
             {
@@ -103,7 +103,7 @@ namespace Elskom.Generic.Libs
             }
         }
 
-        internal ZlibCompressionState Proc(ZStream z, ZlibCompressionState r)
+        internal ZlibCompressionState Proc(ZlibStream z, ZlibCompressionState r)
         {
             int t; // temporary storage
             int b; // bit buffer
@@ -660,7 +660,7 @@ namespace Elskom.Generic.Libs
             }
         }
 
-        internal void Free(ZStream z)
+        internal void Free(ZlibStream z)
         {
             this.Reset(z, null);
             this.Window = null;
@@ -668,7 +668,7 @@ namespace Elskom.Generic.Libs
         }
 
         // copy as much as possible from the sliding window to the output area
-        internal ZlibCompressionState Inflate_flush(ZStream z, ZlibCompressionState r)
+        internal ZlibCompressionState Inflate_flush(ZlibStream z, ZlibCompressionState r)
         {
             int n;
             int p;
