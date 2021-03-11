@@ -17,85 +17,97 @@ namespace Elskom.Generic.Libs
         /// Compresses data using the default compression level.
         /// </summary>
         /// <param name="inData">The original input data.</param>
-        /// <param name="outData">The compressed output data.</param>
-        /// <param name="adler32">The output adler32 of the data.</param>
         /// <exception cref="NotPackableException">
         /// Thrown when the internal compression stream errors in any way.
         /// </exception>
-        public static void Compress(byte[] inData, out byte[] outData, out uint adler32)
-            => Compress(inData, out outData, ZlibCompression.ZDEFAULTCOMPRESSION, out adler32);
+        /// <returns>
+        /// The compressed data.
+        /// </returns>
+        public static byte[] Compress(byte[] inData)
+            => Compress(inData, ZlibCompression.ZDEFAULTCOMPRESSION);
 
         /// <summary>
         /// Compresses a file using the default compression level.
         /// </summary>
         /// <param name="path">The file to compress.</param>
-        /// <param name="outData">The compressed output data.</param>
-        /// <param name="adler32">The output adler32 of the data.</param>
         /// <exception cref="NotPackableException">
         /// Thrown when the internal compression stream errors in any way.
         /// </exception>
-        public static void Compress(string path, out byte[] outData, out uint adler32)
-            => Compress(File.ReadAllBytes(path), out outData, ZlibCompression.ZDEFAULTCOMPRESSION, out adler32);
-
-        /// <summary>
-        /// Compresses data using the default compression level.
-        /// </summary>
-        /// <param name="inData">The original input data.</param>
-        /// <param name="outData">The compressed output data.</param>
-        /// <exception cref="NotPackableException">
-        /// Thrown when the internal compression stream errors in any way.
-        /// </exception>
-        public static void Compress(byte[] inData, out byte[] outData)
-            => Compress(inData, out outData, ZlibCompression.ZDEFAULTCOMPRESSION);
-
-        /// <summary>
-        /// Compresses a file using the default compression level.
-        /// </summary>
-        /// <param name="path">The file to compress.</param>
-        /// <param name="outData">The compressed output data.</param>
-        /// <exception cref="NotPackableException">
-        /// Thrown when the internal compression stream errors in any way.
-        /// </exception>
-        public static void Compress(string path, out byte[] outData)
-            => Compress(File.ReadAllBytes(path), out outData, ZlibCompression.ZDEFAULTCOMPRESSION);
+        /// <returns>
+        /// The compressed data.
+        /// </returns>
+        public static byte[] Compress(string path)
+            => Compress(path, ZlibCompression.ZDEFAULTCOMPRESSION);
 
         /// <summary>
         /// Compresses data using an specific compression level.
         /// </summary>
         /// <param name="inData">The original input data.</param>
-        /// <param name="outData">The compressed output data.</param>
         /// <param name="level">The compression level to use.</param>
         /// <exception cref="NotPackableException">
         /// Thrown when the internal compression stream errors in any way.
         /// </exception>
+        /// <returns>
+        /// The compressed data.
+        /// </returns>
         // discard returned adler32. The caller does not want it.
-        public static void Compress(byte[] inData, out byte[] outData, ZlibCompression level)
-            => Compress(inData, out outData, level, out var _);
+        public static byte[] Compress(byte[] inData, ZlibCompression level)
+            => CompressHash(inData, level).OutData;
 
         /// <summary>
         /// Compresses a file using the default compression level.
         /// </summary>
         /// <param name="path">The file to compress.</param>
-        /// <param name="outData">The compressed output data.</param>
         /// <param name="level">The compression level to use.</param>
         /// <exception cref="NotPackableException">
         /// Thrown when the internal compression stream errors in any way.
         /// </exception>
+        /// <returns>
+        /// The compressed data.
+        /// </returns>
         // discard returned adler32. The caller does not want it.
-        public static void Compress(string path, out byte[] outData, ZlibCompression level)
-            => Compress(File.ReadAllBytes(path), out outData, level, out var _);
+        public static byte[] Compress(string path, ZlibCompression level)
+            => CompressHash(path, level).OutData;
 
         /// <summary>
-        /// Compresses data using an specific compression level.
+        /// Compresses data using the default compression level and outputs an adler32 hash with the data.
+        /// </summary>
+        /// <param name="inData">The original input data.</param>
+        /// <exception cref="NotPackableException">
+        /// Thrown when the internal compression stream errors in any way.
+        /// </exception>
+        /// <returns>
+        /// A <see cref="ValueTuple"/> containing the compressed data, as well as the adler32 hash of that data.
+        /// </returns>
+        public static (byte[] OutData, uint Adler32) CompressHash(byte[] inData)
+            => CompressHash(inData, ZlibCompression.ZDEFAULTCOMPRESSION);
+
+        /// <summary>
+        /// Compresses a file using the default compression level and outputs an adler32 hash with the data.
+        /// </summary>
+        /// <param name="path">The file to compress.</param>
+        /// <exception cref="NotPackableException">
+        /// Thrown when the internal compression stream errors in any way.
+        /// </exception>
+        /// <returns>
+        /// A <see cref="ValueTuple"/> containing the compressed data, as well as the adler32 hash of that data.
+        /// </returns>
+        public static (byte[] OutData, uint Adler32) CompressHash(string path)
+            => CompressHash(File.ReadAllBytes(path), ZlibCompression.ZDEFAULTCOMPRESSION);
+
+        /// <summary>
+        /// Compresses data using an specific compression level and outputs an adler32 hash with the data.
         /// </summary>
         /// <param name="inData">The original input data.</param>
         /// <param name="outStream">The compressed output data.</param>
         /// <param name="level">The compression level to use.</param>
-        /// <param name="adler32">The output adler32 of the data.</param>
         /// <exception cref="NotPackableException">
         /// Thrown when the internal compression stream errors in any way.
         /// </exception>
-        public static void Compress(byte[] inData, Stream outStream, ZlibCompression level, out uint adler32)
+        /// <returns>
+        /// The adler32 hash of the compressed data.
+        /// </returns>
+        public static uint CompressHash(byte[] inData, Stream outStream, ZlibCompression level)
         {
             try
             {
@@ -104,7 +116,7 @@ namespace Elskom.Generic.Libs
                 tmpStrm.CopyTo(outZStream);
                 outZStream.Flush();
                 outZStream.Finish();
-                adler32 = (uint)(outZStream.GetAdler32() & 0xffff);
+                return (uint)(outZStream.GetAdler32() & 0xffff);
             }
             catch (NotPackableException ex)
             {
@@ -126,34 +138,36 @@ namespace Elskom.Generic.Libs
         }
 
         /// <summary>
-        /// Compresses data using an specific compression level.
+        /// Compresses data using an specific compression level and outputs an adler32 hash with the data.
         /// </summary>
         /// <param name="inData">The original input data.</param>
-        /// <param name="outData">The compressed output data.</param>
         /// <param name="level">The compression level to use.</param>
-        /// <param name="adler32">The output adler32 of the data.</param>
         /// <exception cref="NotPackableException">
         /// Thrown when the internal compression stream errors in any way.
         /// </exception>
-        public static void Compress(byte[] inData, out byte[] outData, ZlibCompression level, out uint adler32)
+        /// <returns>
+        /// A <see cref="ValueTuple"/> containing the compressed data, as well as the adler32 hash of that data.
+        /// </returns>
+        public static (byte[] OutData, uint Adler32) CompressHash(byte[] inData, ZlibCompression level)
         {
             using var outMemoryStream = new MemoryStream();
-            Compress(inData, outMemoryStream, level, out adler32);
-            outData = outMemoryStream.ToArray();
+            var result = CompressHash(inData, outMemoryStream, level);
+            return (outMemoryStream.ToArray(), result);
         }
 
         /// <summary>
-        /// Compresses a file using an specific compression level.
+        /// Compresses a file using an specific compression level and outputs an adler32 hash with the data.
         /// </summary>
         /// <param name="path">The file to compress.</param>
-        /// <param name="outData">The compressed output data.</param>
         /// <param name="level">The compression level to use.</param>
-        /// <param name="adler32">The output adler32 of the data.</param>
         /// <exception cref="NotPackableException">
         /// Thrown when the internal compression stream errors in any way.
         /// </exception>
-        public static void Compress(string path, out byte[] outData, ZlibCompression level, out uint adler32)
-            => Compress(File.ReadAllBytes(path), out outData, level, out adler32);
+        /// <returns>
+        /// A <see cref="ValueTuple"/> containing the compressed data, as well as the adler32 hash of that data.
+        /// </returns>
+        public static (byte[] OutData, uint Adler32) CompressHash(string path, ZlibCompression level)
+            => CompressHash(File.ReadAllBytes(path), level);
 
         /// <summary>
         /// Decompresses data.
@@ -195,27 +209,31 @@ namespace Elskom.Generic.Libs
         /// Decompresses data.
         /// </summary>
         /// <param name="inData">The compressed input data.</param>
-        /// <param name="outData">The decompressed output data.</param>
         /// <exception cref="NotUnpackableException">
         /// Thrown when the internal decompression stream errors in any way.
         /// </exception>
-        public static void Decompress(byte[] inData, out byte[] outData)
+        /// <returns>
+        /// The decompressed data.
+        /// </returns>
+        public static byte[] Decompress(byte[] inData)
         {
             using var outMemoryStream = new MemoryStream();
             Decompress(inData, outMemoryStream);
-            outData = outMemoryStream.ToArray();
+            return outMemoryStream.ToArray();
         }
 
         /// <summary>
         /// Decompresses a file.
         /// </summary>
         /// <param name="path">The file to decompress.</param>
-        /// <param name="outData">The decompressed output data.</param>
         /// <exception cref="NotPackableException">
         /// Thrown when the internal decompression stream errors in any way.
         /// </exception>
-        public static void Decompress(string path, out byte[] outData)
-            => Decompress(File.ReadAllBytes(path), out outData);
+        /// <returns>
+        /// The decompressed data.
+        /// </returns>
+        public static byte[] Decompress(string path)
+            => Decompress(File.ReadAllBytes(path));
 
         /// <summary>
         /// Check data for compression by zlib.

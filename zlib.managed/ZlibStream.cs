@@ -90,12 +90,12 @@ namespace Elskom.Generic.Libs
         /// <summary>
         /// Gets the total number of bytes input so far.
         /// </summary>
-        public long TotalIn { get; internal set; } //=> this.Z.TotalIn;
+        public long TotalIn { get; internal set; }
 
         /// <summary>
         /// Gets the total number of bytes output so far.
         /// </summary>
-        public long TotalOut { get; internal set; } // => this.Z.TotalOut;
+        public long TotalOut { get; internal set; }
 
         /// <inheritdoc/>
         public override bool CanRead => this.BaseStream != null && !this.Compress && this.BaseStream.CanRead;
@@ -203,7 +203,7 @@ namespace Elskom.Generic.Libs
                     return 0;
                 }
 
-                if (err != ZlibCompressionState.ZOK && err != ZlibCompressionState.ZSTREAMEND)
+                if (err is not ZlibCompressionState.ZOK and not ZlibCompressionState.ZSTREAMEND)
                 {
                     throw new NotUnpackableException($"inflating: {this.Msg}");
                 }
@@ -276,7 +276,7 @@ namespace Elskom.Generic.Libs
                 this.NextOutIndex = 0;
                 this.AvailOut = this.Bufsize;
                 err = this.Deflate(this.FlushMode);
-                if (err != ZlibCompressionState.ZOK && err != ZlibCompressionState.ZSTREAMEND)
+                if (err is not ZlibCompressionState.ZOK and not ZlibCompressionState.ZSTREAMEND)
                 {
                     throw new NotPackableException($"deflating: {this.Msg}");
                 }
@@ -313,7 +313,7 @@ namespace Elskom.Generic.Libs
                     this.NextOutIndex = 0;
                     this.AvailOut = this.Bufsize;
                     err = this.Compress ? this.Deflate(ZlibFlushStrategy.ZFINISH) : this.Inflate(ZlibFlushStrategy.ZFINISH);
-                    if (err != ZlibCompressionState.ZSTREAMEND && err != ZlibCompressionState.ZOK)
+                    if (err is not ZlibCompressionState.ZSTREAMEND and not ZlibCompressionState.ZOK)
                     {
                         if (this.Compress)
                         {
@@ -374,40 +374,7 @@ namespace Elskom.Generic.Libs
         public override void SetLength(long value)
             => throw new NotSupportedException("Setting length is not supported.");
 
-        /// <inheritdoc/>
-        protected override void Dispose(bool disposing)
-        {
-            if (!this.isDisposed && disposing)
-            {
-                try
-                {
-                    try
-                    {
-                        this.Finish();
-                    }
-                    catch
-                    {
-                        // should never throw.
-                    }
-                }
-                finally
-                {
-                    this.EndStream();
-                }
-
-                if (!this.KeepOpen)
-                {
-                    this.BaseStream?.Dispose();
-                }
-
-                this.isDisposed = true;
-                base.Dispose(disposing);
-            }
-        }
-
-
         // internal and private non-stream members.
-
         internal ZlibCompressionState InflateInit()
             => this.InflateInit(15); // 32K LZ77 window
 
@@ -520,6 +487,37 @@ namespace Elskom.Generic.Libs
             this.NextInIndex += len;
             this.TotalIn += len;
             return len;
+        }
+
+        /// <inheritdoc/>
+        protected override void Dispose(bool disposing)
+        {
+            if (!this.isDisposed && disposing)
+            {
+                try
+                {
+                    try
+                    {
+                        this.Finish();
+                    }
+                    catch
+                    {
+                        // should never throw.
+                    }
+                }
+                finally
+                {
+                    this.EndStream();
+                }
+
+                if (!this.KeepOpen)
+                {
+                    this.BaseStream?.Dispose();
+                }
+
+                this.isDisposed = true;
+                base.Dispose(disposing);
+            }
         }
 
         private void InitBlock()

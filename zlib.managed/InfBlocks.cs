@@ -10,7 +10,7 @@ namespace Elskom.Generic.Libs
     internal sealed class InfBlocks
     {
         // Table for deflate from PKZIP's appnote.txt.
-        internal static readonly int[] Border = new int[]
+        internal static readonly int[] Border = new[]
         {
             16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15,
         };
@@ -28,7 +28,7 @@ namespace Elskom.Generic.Libs
         private const int BAD = 9; // got a data error--stuck here
 
         // And'ing with mask[n] masks the lower n bits
-        private static readonly int[] InflateMask = new int[]
+        private static readonly int[] InflateMask = new[]
         {
             0x00000000, 0x00000001, 0x00000003, 0x00000007, 0x0000000f, 0x0000001f, 0x0000003f,
             0x0000007f, 0x000000ff, 0x000001ff, 0x000003ff, 0x000007ff, 0x00000fff, 0x00001fff,
@@ -83,7 +83,7 @@ namespace Elskom.Generic.Libs
                 c[0] = this.check;
             }
 
-            if (this.mode == BTREE || this.mode == DTREE)
+            if (this.mode is BTREE or DTREE)
             {
                 this.blens = null;
             }
@@ -203,6 +203,11 @@ namespace Elskom.Generic.Libs
                                 z.NextInIndex = p;
                                 this.Write = q;
                                 return this.Inflate_flush(z, r);
+                            }
+
+                            default:
+                            {
+                                throw new NotSupportedException();
                             }
                         }
 

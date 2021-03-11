@@ -1,4 +1,4 @@
-﻿<Project Sdk="PublishRefAssemblies.Sdk/1.0.2">
+﻿<Project Sdk="PublishRefAssemblies.Sdk/1.0.3">
 
   <PropertyGroup>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
@@ -25,7 +25,9 @@
 - use simplified using statements instead of blocks in MemoryZlib since all the methods do is use the streams to do compression/decompression.
 - Removed unused internal/private methods as well too (dead code).
 - Removed ZImputStream and ZOutputStream and replacted it with ZlibStream.
-- Added Compression levels 2 ~ 8 to ZlibCompression.</PackageReleaseNotes>
+- Added Compression levels 2 ~ 8 to ZlibCompression.
+- Replaced output parameters on methods inside of the MemoryZlib class to return values.
+- Renamed Compress methods that return an Adler32 hash to CompressHash.</PackageReleaseNotes>
     <Version>2.0.0</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <NoWarn>$(NoWarn);NU5104;NU5118</NoWarn>
@@ -47,9 +49,9 @@
     <!-- <SymbolPackageFormat>snupkg</SymbolPackageFormat> -->
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     <OutputPath>bin\Any CPU\$(Configuration)\</OutputPath>
-    <DocumentationFile>bin\Any CPU\$(Configuration)\zlib.managed.xml</DocumentationFile>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <UseValueTuple>true</UseValueTuple>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

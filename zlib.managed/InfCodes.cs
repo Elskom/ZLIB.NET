@@ -23,7 +23,7 @@ namespace Elskom.Generic.Libs
         private const int END = 8; // x: got eob and all data flushed
         private const int BADCODE = 9; // x: got error
 
-        private static readonly int[] InflateMask = new int[]
+        private static readonly int[] InflateMask = new[]
         {
             0x00000000, 0x00000001, 0x00000003, 0x00000007, 0x0000000f, 0x0000001f,
             0x0000003f, 0x0000007f, 0x000000ff, 0x000001ff, 0x000003ff, 0x000007ff,
@@ -197,7 +197,7 @@ namespace Elskom.Generic.Libs
                                     // offset before dest
                                     //  just copy
                                     r = q - d;
-                                    if (q - r > 0 && q - r < 2)
+                                    if (q - r is > 0 and < 2)
                                     {
                                         s.Window[q++] = s.Window[r++];
                                         c--; // minimum count is three,
