@@ -68,7 +68,7 @@ namespace Elskom.Generic.Libs
         private const int LCODES = LITERALS + 1 + LENGTHCODES;
         private const int HEAPSIZE = (2 * LCODES) + 1;
 
-        private static readonly Config[] ConfigTable = new Config[]
+        private static readonly Config[] ConfigTable = new[]
         {
             // good  lazy  nice  chain
             new Config(0, 0, 0, 0, STORED), // 0
@@ -83,7 +83,7 @@ namespace Elskom.Generic.Libs
             new Config(32, 258, 258, 4096, SLOW),  // 9
         };
 
-        private static readonly string[] ZErrmsg = new string[]
+        private static readonly string[] ZErrmsg = new[]
         {
             "need dictionary", "stream end", string.Empty, "file error", "stream error",
             "data error", "insufficient memory", "buffer error", "incompatible version",
@@ -1461,7 +1461,7 @@ namespace Elskom.Generic.Libs
 
         internal ZlibCompressionState DeflateEnd()
         {
-            if (this.Status != INITSTATE && this.Status != BUSYSTATE && this.Status != FINISHSTATE)
+            if (this.Status is not INITSTATE and not BUSYSTATE and not FINISHSTATE)
             {
                 return ZlibCompressionState.ZSTREAMERROR;
             }
@@ -1479,7 +1479,7 @@ namespace Elskom.Generic.Libs
         internal ZlibCompressionState Compress(ZlibStream strm, ZlibFlushStrategy flush)
         {
             ZlibFlushStrategy old_flush;
-            if (flush > ZlibFlushStrategy.ZFINISH || flush < 0)
+            if (flush is > ZlibFlushStrategy.ZFINISH or < 0)
             {
                 return ZlibCompressionState.ZSTREAMERROR;
             }
@@ -1565,31 +1565,20 @@ namespace Elskom.Generic.Libs
             // Start a new block or continue the current one.
             if (strm.AvailIn != 0 || this.Lookahead != 0 || (flush != ZlibFlushStrategy.ZNOFLUSH && this.Status != FINISHSTATE))
             {
-                var bstate = -1;
-                switch (ConfigTable[(int)this.Level].Func)
+                var bstate = ConfigTable[(int)this.Level].Func switch
                 {
-                    case STORED:
-                        bstate = this.Deflate_stored(flush);
-                        break;
+                    STORED => this.Deflate_stored(flush),
+                    FAST => this.Deflate_fast(flush),
+                    SLOW => this.Deflate_slow(flush),
+                    _ => throw new NotSupportedException(),
+                };
 
-                    case FAST:
-                        bstate = this.Deflate_fast(flush);
-                        break;
-
-                    case SLOW:
-                        bstate = this.Deflate_slow(flush);
-                        break;
-
-                    default:
-                        break;
-                }
-
-                if (bstate == FinishStarted || bstate == FinishDone)
+                if (bstate is FinishStarted or FinishDone)
                 {
                     this.Status = FINISHSTATE;
                 }
 
-                if (bstate == NeedMore || bstate == FinishStarted)
+                if (bstate is NeedMore or FinishStarted)
                 {
                     if (strm.AvailOut == 0)
                     {

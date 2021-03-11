@@ -331,7 +331,7 @@ namespace Elskom.Generic.Libs
             }
 
             // set window size
-            if (w < 8 || w > 15)
+            if (w is < 8 or > 15)
             {
                 _ = this.InflateEnd(z);
                 return ZlibCompressionState.ZSTREAMERROR;
