@@ -18,14 +18,6 @@ namespace Elskom.Generic.Libs
         /// <summary>
         /// Initializes a new instance of the <see cref="NotPackableException"/> class.
         /// </summary>
-        public NotPackableException()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NotPackableException"/> class.
-        /// </summary>
         /// <param name="s">The error string.</param>
         public NotPackableException(string s)
             : base(s)

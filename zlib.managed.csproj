@@ -27,7 +27,8 @@
 - Removed ZImputStream and ZOutputStream and replacted it with ZlibStream.
 - Added Compression levels 2 ~ 8 to ZlibCompression.
 - Replaced output parameters on methods inside of the MemoryZlib class to return values.
-- Renamed Compress methods that return an Adler32 hash to CompressHash.</PackageReleaseNotes>
+- Renamed Compress methods that return an Adler32 hash to CompressHash.
+- Removed parameterless constructor on NotPackableException and NotUnpackableException.</PackageReleaseNotes>
     <Version>2.0.0</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <NoWarn>$(NoWarn);NU5104;NU5118</NoWarn>
