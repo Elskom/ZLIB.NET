@@ -16,14 +16,6 @@ namespace Elskom.Generic.Libs
     public sealed class NotUnpackableException : IOException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="NotUnpackableException"/> class with no argrument.
-        /// </summary>
-        public NotUnpackableException()
-            : base()
-        {
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="NotUnpackableException"/> class with an string argrument.
         /// </summary>
         /// <param name="s">The error string.</param>
