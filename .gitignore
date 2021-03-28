@@ -1,5 +1,8 @@
 .vs
 bin
 obj
-GitAssemblyInfo.cs
 .idea/
+GitInfo.json
+
+# opening Finder on mac inside the repository creates these.
+.DS_Store

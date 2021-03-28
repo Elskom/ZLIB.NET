@@ -1,0 +1,4 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Elskom/GitBuildInfo.SourceGenerator/main/settings.schema.json",
+  "AssemblyType": "Elskom.Generic.Libs.MemoryZlib"
+}
