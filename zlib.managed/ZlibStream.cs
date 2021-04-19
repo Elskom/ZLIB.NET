@@ -14,20 +14,9 @@ namespace Elskom.Generic.Libs
     /// </summary>
     public sealed class ZlibStream : Stream
     {
-        private readonly byte[] pBuf1 = new byte[1];
+        private byte[] pBuf1;
         private byte[] pBuf;
         private bool isDisposed;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ZlibStream"/> class for decompression.
-        ///
-        /// Note: this ctor overload uses an <see cref="MemoryStream"/>.
-        /// </summary>
-        /// <param name="input">The input data to decompress with.</param>
-        public ZlibStream(byte[] input)
-            : this(new MemoryStream(input))
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ZlibStream"/> class for compression.
@@ -48,6 +37,7 @@ namespace Elskom.Generic.Libs
             this.BaseStream = input;
             this.KeepOpen = keepOpen;
             this.InitBlock();
+            this.IState = new Inflate();
             _ = this.InflateInit();
             this.Compress = false;
         }
@@ -73,6 +63,7 @@ namespace Elskom.Generic.Libs
             this.BaseStream = output;
             this.KeepOpen = keepOpen;
             this.InitBlock();
+            this.DState = new Deflate();
             _ = this.DeflateInit(level);
             this.Compress = true;
         }
@@ -85,7 +76,7 @@ namespace Elskom.Generic.Libs
         /// <summary>
         /// Gets or sets a value indicating whether there is more input.
         /// </summary>
-        public bool Moreinput { get; set; }
+        public bool MoreInput { get; set; }
 
         /// <summary>
         /// Gets the total number of bytes input so far.
@@ -107,20 +98,20 @@ namespace Elskom.Generic.Libs
         public override bool CanWrite => this.BaseStream != null && this.Compress && this.BaseStream.CanWrite;
 
         /// <inheritdoc/>
-        public override long Length => this.BaseStream != null ? this.BaseStream.Length : throw new ObjectDisposedException(nameof(this.BaseStream));
+        public override long Length => this.BaseStream?.Length ?? throw new ObjectDisposedException(nameof(this.BaseStream));
 
         /// <inheritdoc/>
         public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
 
-        internal int Bufsize { get; private set; } = 8192;
+        internal int BufSize => 8192;
 
-        internal bool Compress { get; private set; }
+        internal bool Compress { get; }
 
         internal ZlibFlushStrategy FlushMode { get; set; }
 
         internal Stream BaseStream { get; set; }
 
-        internal bool KeepOpen { get; set; }
+        internal bool KeepOpen { get; }
 
         internal long Adler { get; set; }
 
@@ -130,17 +121,17 @@ namespace Elskom.Generic.Libs
 
         internal int AvailOut { get; set; }
 
-        internal byte[] INextIn { get; set; }
+        internal byte[] NextIn { get; set; }
 
-        internal byte[] INextOut { get; set; }
+        internal byte[] NextOut { get; set; }
 
         internal int NextInIndex { get; set; }
 
         internal int AvailIn { get; set; }
 
-        internal Deflate Dstate { get; set; }
+        internal Deflate DState { get; set; }
 
-        internal Inflate Istate { get; private set; }
+        internal Inflate IState { get; set; }
 
         internal int DataType { get; set; } // best guess about the data type: ascii or binary
 
@@ -162,60 +153,49 @@ namespace Elskom.Generic.Libs
             }
 
             ZlibCompressionState err;
-            this.INextOut = buffer;
+            this.NextOut = buffer;
             this.NextOutIndex = offset;
             this.AvailOut = count;
             do
             {
-                if (this.AvailIn == 0 && !this.Moreinput)
+                if (this.AvailIn == 0 && !this.MoreInput)
                 {
-                    // if buffer is empty and more input is avaiable, refill it
+                    // if buffer is empty and more input is available, refill it
                     this.NextInIndex = 0;
                     if (this.pBuf.Length == 0)
                     {
                         this.AvailIn = 0;
                     }
 
-                    var receiver = new byte[this.pBuf.Length];
-                    var bytesRead = this.BaseStream.Read(receiver, 0, this.Bufsize);
+                    var bytesRead = this.BaseStream.Read(this.pBuf, 0, this.BufSize);
                     if (bytesRead == 0)
                     {
-                        this.AvailIn = -1;
-                    }
-
-                    for (var i = 0; i < 0 + bytesRead; i++)
-                    {
-                        this.pBuf[i] = receiver[i];
-                    }
-
-                    if (this.AvailIn == -1)
-                    {
                         this.AvailIn = 0;
-                        this.Moreinput = true;
+                        this.MoreInput = true;
                     }
                 }
 
                 err = this.Inflate(this.FlushMode);
-                if (this.Moreinput && err == ZlibCompressionState.ZBUFERROR)
+                if (this.MoreInput && err == ZlibCompressionState.BufError)
                 {
                     // we must always return 0 if nothing can be read (and when no exceptions are thrown) to not break any Async stream methods too.
                     // see issue: https://github.com/Elskom/zlib.managed/issues/136/ for more details.
                     return 0;
                 }
 
-                if (err is not ZlibCompressionState.ZOK and not ZlibCompressionState.ZSTREAMEND)
+                if (err is not ZlibCompressionState.Ok and not ZlibCompressionState.StreamEnd)
                 {
                     throw new NotUnpackableException($"inflating: {this.Msg}");
                 }
 
-                if (this.Moreinput && this.AvailOut == count)
+                if (this.MoreInput && this.AvailOut == count)
                 {
                     // we must always return 0 if nothing can be read (and when no exceptions are thrown) to not break any Async stream methods too.
                     // see issue: https://github.com/Elskom/zlib.managed/issues/136/ for more details.
                     return 0;
                 }
             }
-            while (this.AvailOut > 0 && err == ZlibCompressionState.ZOK);
+            while (this.AvailOut > 0 && err == ZlibCompressionState.Ok);
 
             return count - this.AvailOut;
         }
@@ -264,30 +244,27 @@ namespace Elskom.Generic.Libs
                 return;
             }
 
-            ZlibCompressionState err;
-            var b = new byte[buffer.Length];
-            Array.Copy(buffer, 0, b, 0, buffer.Length);
-            this.INextIn = b;
+            this.NextIn = buffer;
             this.NextInIndex = offset;
             this.AvailIn = count;
             do
             {
-                this.INextOut = this.pBuf;
+                this.NextOut = this.pBuf;
                 this.NextOutIndex = 0;
-                this.AvailOut = this.Bufsize;
-                err = this.Deflate(this.FlushMode);
-                if (err is not ZlibCompressionState.ZOK and not ZlibCompressionState.ZSTREAMEND)
+                this.AvailOut = this.BufSize;
+                var err = this.Deflate(this.FlushMode);
+                if (err is not ZlibCompressionState.Ok and not ZlibCompressionState.StreamEnd)
                 {
                     throw new NotPackableException($"deflating: {this.Msg}");
                 }
 
-                this.BaseStream.Write(this.pBuf, 0, this.Bufsize - this.AvailOut);
+                this.BaseStream.Write(this.pBuf, 0, this.BufSize - this.AvailOut);
                 if (!this.Compress && this.AvailIn == 0 && this.AvailOut == 0)
                 {
                     break;
                 }
 
-                if (err == ZlibCompressionState.ZSTREAMEND)
+                if (err == ZlibCompressionState.StreamEnd)
                 {
                     break;
                 }
@@ -306,14 +283,13 @@ namespace Elskom.Generic.Libs
         {
             if (!this.IsFinished)
             {
-                ZlibCompressionState err;
                 do
                 {
-                    this.INextOut = this.pBuf;
+                    this.NextOut = this.pBuf;
                     this.NextOutIndex = 0;
-                    this.AvailOut = this.Bufsize;
-                    err = this.Compress ? this.Deflate(ZlibFlushStrategy.ZFINISH) : this.Inflate(ZlibFlushStrategy.ZFINISH);
-                    if (err is not ZlibCompressionState.ZSTREAMEND and not ZlibCompressionState.ZOK)
+                    this.AvailOut = this.BufSize;
+                    var err = this.Compress ? this.Deflate(ZlibFlushStrategy.Finish) : this.Inflate(ZlibFlushStrategy.Finish);
+                    if (err is not ZlibCompressionState.StreamEnd and not ZlibCompressionState.Ok)
                     {
                         if (this.Compress)
                         {
@@ -325,12 +301,12 @@ namespace Elskom.Generic.Libs
                         }
                     }
 
-                    if (this.Bufsize - this.AvailOut > 0)
+                    if (this.BufSize - this.AvailOut > 0)
                     {
-                        this.BaseStream.Write(this.pBuf, 0, this.Bufsize - this.AvailOut);
+                        this.BaseStream.Write(this.pBuf, 0, this.BufSize - this.AvailOut);
                     }
 
-                    if (err == ZlibCompressionState.ZSTREAMEND)
+                    if (err == ZlibCompressionState.StreamEnd)
                     {
                         break;
                     }
@@ -376,58 +352,50 @@ namespace Elskom.Generic.Libs
 
         // internal and private non-stream members.
         internal ZlibCompressionState InflateInit()
-            => this.InflateInit(15); // 32K LZ77 window
-
-        internal ZlibCompressionState InflateInit(int w)
-        {
-            this.Istate = new Inflate();
-            return this.Istate.InflateInit(this, w);
-        }
+            => this.IState.InflateInit(this, 15); // 32K LZ77 window
 
         internal ZlibCompressionState Inflate(ZlibFlushStrategy f)
-            => this.Istate == null ? ZlibCompressionState.ZSTREAMERROR : Libs.Inflate.Decompress(this, f);
+            => this.IState == null ? ZlibCompressionState.StreamError : Libs.Inflate.Decompress(this, f);
 
         internal ZlibCompressionState InflateEnd()
         {
-            if (this.Istate == null)
+            if (this.IState == null)
             {
-                return ZlibCompressionState.ZSTREAMERROR;
+                return ZlibCompressionState.StreamError;
             }
 
-            var ret = this.Istate.InflateEnd(this);
-            this.Istate = null;
+            var ret = this.IState.InflateEnd(this);
+            this.IState = null;
             return ret;
         }
 
         internal ZlibCompressionState DeflateInit(ZlibCompression level)
-            => this.DeflateInit(level, 15); // 32K LZ77 window
-
-        internal ZlibCompressionState DeflateInit(ZlibCompression level, int bits)
-        {
-            this.Dstate = new Deflate();
-            return this.Dstate.DeflateInit(this, level, bits);
-        }
+            => this.DState.DeflateInit(this, level, 15); // 32K LZ77 window
 
         internal ZlibCompressionState Deflate(ZlibFlushStrategy flush)
-            => this.Dstate == null ? ZlibCompressionState.ZSTREAMERROR : this.Dstate.Compress(this, flush);
+            => this.DState?.Compress(this, flush) ?? ZlibCompressionState.StreamError;
 
         internal ZlibCompressionState DeflateEnd()
         {
-            if (this.Dstate == null)
+            if (this.DState == null)
             {
-                return ZlibCompressionState.ZSTREAMERROR;
+                return ZlibCompressionState.StreamError;
             }
 
-            var ret = this.Dstate.DeflateEnd();
-            this.Dstate = null;
+            var ret = this.DState.DeflateEnd();
+            this.DState = null;
             return ret;
         }
 
         internal void Free()
         {
-            this.INextIn = null;
-            this.INextOut = null;
+            this.NextIn = null;
+            this.NextOut = null;
             this.Msg = null;
+
+            // ensure the buffers always get cleared when disposing!!!
+            this.pBuf = null;
+            this.pBuf1 = null;
         }
 
         // Flush as much pending output as possible. All deflate() output goes
@@ -436,7 +404,7 @@ namespace Elskom.Generic.Libs
         // (See also read_buf()).
         internal void Flush_pending()
         {
-            var len = this.Dstate.Pending;
+            var len = this.DState.Pending;
             if (len > this.AvailOut)
             {
                 len = this.AvailOut;
@@ -447,15 +415,15 @@ namespace Elskom.Generic.Libs
                 return;
             }
 
-            Array.Copy(this.Dstate.PendingBuf, this.Dstate.PendingOut, this.INextOut, this.NextOutIndex, len);
+            Array.Copy(this.DState.PendingBuf, this.DState.PendingOut, this.NextOut, this.NextOutIndex, len);
             this.NextOutIndex += len;
-            this.Dstate.PendingOut += len;
+            this.DState.PendingOut += len;
             this.TotalOut += len;
             this.AvailOut -= len;
-            this.Dstate.Pending -= len;
-            if (this.Dstate.Pending == 0)
+            this.DState.Pending -= len;
+            if (this.DState.Pending == 0)
             {
-                this.Dstate.PendingOut = 0;
+                this.DState.PendingOut = 0;
             }
         }
 
@@ -478,12 +446,12 @@ namespace Elskom.Generic.Libs
             }
 
             this.AvailIn -= len;
-            if (this.Dstate.Noheader == 0)
+            if (this.DState.Noheader == 0)
             {
-                this.Adler = Adler32.Calculate(this.Adler, this.INextIn, this.NextInIndex, len);
+                this.Adler = Adler32.Calculate(this.Adler, this.NextIn, this.NextInIndex, len);
             }
 
-            Array.Copy(this.INextIn, this.NextInIndex, buf, start, len);
+            Array.Copy(this.NextIn, this.NextInIndex, buf, start, len);
             this.NextInIndex += len;
             this.TotalIn += len;
             return len;
@@ -496,14 +464,11 @@ namespace Elskom.Generic.Libs
             {
                 try
                 {
-                    try
-                    {
-                        this.Finish();
-                    }
-                    catch
-                    {
-                        // should never throw.
-                    }
+                    this.Finish();
+                }
+                catch
+                {
+                    // should never throw.
                 }
                 finally
                 {
@@ -516,14 +481,16 @@ namespace Elskom.Generic.Libs
                 }
 
                 this.isDisposed = true;
-                base.Dispose(disposing);
             }
+
+            base.Dispose(disposing);
         }
 
         private void InitBlock()
         {
-            this.FlushMode = ZlibFlushStrategy.ZNOFLUSH;
-            this.pBuf = new byte[this.Bufsize];
+            this.FlushMode = ZlibFlushStrategy.NoFlush;
+            this.pBuf = new byte[this.BufSize];
+            this.pBuf1 = new byte[1];
         }
     }
 }

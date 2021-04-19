@@ -7,8 +7,8 @@ namespace Elskom.Generic.Libs
 {
     internal enum ZlibCompressionStrategy
     {
-        ZDEFAULTSTRATEGY,
-        ZFILTERED,
-        ZHUFFMANONLY,
+        DefaultStrategy,
+        Filtered,
+        HuffmanOnly,
     }
 }
