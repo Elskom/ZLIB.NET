@@ -7,25 +7,19 @@ namespace Elskom.Generic.Libs
 {
     internal static class Adler32
     {
-        // largest prime smaller than 65536
-        private const int BASE = 65521;
-
-        // NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1
-        private const int NMAX = 5552;
-
         internal static long Calculate(long adler, byte[] buf, int index, int len)
         {
-            if (buf == null)
+            if (buf is null)
             {
                 return 1L;
             }
 
             var s1 = adler & 0xffff;
             var s2 = (adler >> 16) & 0xffff;
-            int k;
             while (len > 0)
             {
-                k = len < NMAX ? len : NMAX;
+                // 5552 is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1
+                var k = len < 5552 ? len : 5552;
                 len -= k;
                 while (k >= 16)
                 {
@@ -48,8 +42,9 @@ namespace Elskom.Generic.Libs
                     while (--k != 0);
                 }
 
-                s1 %= BASE;
-                s2 %= BASE;
+                // largest prime smaller than 65536.
+                s1 %= 65521;
+                s2 %= 65521;
             }
 
             return (s2 << 16) | s1;

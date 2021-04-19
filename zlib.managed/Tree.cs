@@ -5,57 +5,49 @@
 
 namespace Elskom.Generic.Libs
 {
+    using System;
+
     internal sealed class Tree
     {
-        // Bit length codes must not exceed MAX_BL_BITS bits
-        internal const int MAXBLBITS = 7;
-
-        // end of block literal code
-        internal const int ENDBLOCK = 256;
-
-        // repeat previous bit length 3-6 times (2 bits of repeat count)
-        internal const int REP36 = 16;
-
-        // repeat a zero length 3-10 times  (3 bits of repeat count)
-        internal const int REPZ310 = 17;
-
-        // repeat a zero length 11-138 times  (7 bits of repeat count)
-        internal const int REPZ11138 = 18;
-
-        // The lengths of the bit length codes are sent in order of decreasing
-        // probability, to avoid transmitting the lengths for unused bit
-        // length codes.
-        internal const int BufSize = 8 * 2;
-
-        // see definition of array dist_code below
-        internal const int DISTCODELEN = 512;
-
         // extra bits for each length code
-        internal static readonly int[] ExtraLbits = new[]
+        internal static ReadOnlySpan<int> ExtraLbits => new[]
         {
             0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3,
             3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0,
         };
 
         // extra bits for each distance code
-        internal static readonly int[] ExtraDbits = new[]
+        internal static ReadOnlySpan<int> ExtraDbits => new[]
         {
             0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7,
             8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13,
         };
 
         // extra bits for each bit length code
-        internal static readonly int[] ExtraBlbits = new[]
+        internal static ReadOnlySpan<int> ExtraBlbits => new[]
         {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7,
         };
 
-        internal static readonly byte[] BlOrder = new byte[]
+        internal static ReadOnlySpan<int> BaseLength => new[]
+        {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 56,
+            64, 80, 96, 112, 128, 160, 192, 224, 0,
+        };
+
+        internal static ReadOnlySpan<int> BaseDist => new[]
+        {
+            0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384,
+            512, 768, 1024, 1536, 2048, 3072, 4096, 6144, 8192, 12288, 16384,
+            24576,
+        };
+
+        internal static ReadOnlySpan<byte> BlOrder => new byte[]
         {
             16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15,
         };
 
-        internal static readonly byte[] DistCode = new byte[]
+        internal static ReadOnlySpan<byte> DistCode => new byte[]
         {
             0, 1, 2, 3, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8,
             9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
@@ -87,43 +79,24 @@ namespace Elskom.Generic.Libs
             29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
         };
 
-        internal static readonly byte[] LengthCode = new byte[]
+        internal static ReadOnlySpan<byte> LengthCode => new byte[]
         {
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 12, 12, 13,
-            13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 16, 16, 16,
-            16, 17, 17, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 19,
-            19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-            20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
-            21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
-            22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24,
-            24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-            24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25,
-            25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
-            25, 25, 25, 25, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-            26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-            26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-            27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-            28,
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 12, 12,
+            13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 16,
+            16, 16, 16, 17, 17, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18,
+            18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20,
+            20, 20, 20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21,
+            21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22,
+            22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+            23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+            24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+            24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+            25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+            25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+            26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+            27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+            27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28,
         };
-
-        internal static readonly int[] BaseLength = new[]
-        {
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 56,
-            64, 80, 96, 112, 128, 160, 192, 224, 0,
-        };
-
-        internal static readonly int[] BaseDist = new[]
-        {
-            0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384,
-            512, 768, 1024, 1536, 2048, 3072, 4096, 6144, 8192, 12288, 16384,
-            24576,
-        };
-
-        private const int MAXBITS = 15;
-        private const int LITERALS = 256;
-        private const int LENGTHCODES = 29;
-        private const int LCODES = LITERALS + 1 + LENGTHCODES;
-        private const int HEAPSIZE = (2 * LCODES) + 1;
 
         internal short[] DynTree { get; set; } // the dynamic tree
 
@@ -135,7 +108,7 @@ namespace Elskom.Generic.Libs
         // must not have side effects. _dist_code[256] and _dist_code[257] are never
         // used.
         internal static int D_code(int dist)
-            => dist < 256 ? DistCode[dist] : DistCode[256 + (dist >= 0 ? dist >> 7 : (dist >> 7) + (2 << ~7))];
+            => dist < 256 ? DistCode[dist] : DistCode[256 + (dist >> 7)];
 
         // Generate the codes for a given tree and bit counts (which need not be
         // optimal).
@@ -143,23 +116,23 @@ namespace Elskom.Generic.Libs
         // the given tree and the field len is set for all tree elements.
         // OUT assertion: the field code is set for all tree elements of non
         //     zero code length.
-        internal static void Gen_codes(short[] tree, int max_code, short[] bl_count)
+        internal static void Gen_codes(short[] tree, int maxCode, short[] blCount)
         {
-            var next_code = new short[MAXBITS + 1]; // next code value for each bit length
+            var nextCode = new short[16]; // next code value for each bit length
             short code = 0; // running code value
             int bits; // bit index
             int n; // code index
 
             // The distribution counts are first used to generate the code values
             // without bit reversal.
-            for (bits = 1; bits <= MAXBITS; bits++)
+            for (bits = 1; bits <= 15; bits++)
             {
-                next_code[bits] = code = (short)((code + bl_count[bits - 1]) << 1);
+                nextCode[bits] = code = (short)((code + blCount[bits - 1]) << 1);
             }
 
             // Check that the bit counts in bl_count are consistent. The last code
             // must be all ones.
-            for (n = 0; n <= max_code; n++)
+            for (n = 0; n <= maxCode; n++)
             {
                 int len = tree[(n * 2) + 1];
                 if (len == 0)
@@ -168,7 +141,7 @@ namespace Elskom.Generic.Libs
                 }
 
                 // Now reverse the bits
-                tree[n * 2] = (short)Bi_reverse(next_code[len]++, len);
+                tree[n * 2] = (short)Bi_reverse(nextCode[len]++, len);
             }
         }
 
@@ -181,12 +154,12 @@ namespace Elskom.Generic.Libs
             do
             {
                 res |= code & 1;
-                code = code >= 0 ? code >> 1 : (code >> 1) + (2 << ~1);
+                code = code >= 0 ? code >> 1 : (code >> 1) + -2147483648;
                 res <<= 1;
             }
             while (--len > 0);
 
-            return res >= 0 ? res >> 1 : (res >> 1) + (2 << ~1);
+            return res >= 0 ? res >> 1 : (res >> 1) + -2147483648;
         }
 
         // Compute the optimal bit lengths for a tree and update the total bit length
@@ -200,17 +173,25 @@ namespace Elskom.Generic.Libs
         internal void Gen_bitlen(Deflate s)
         {
             var tree = this.DynTree;
-            var stree = this.StatDesc.StaticTreeValue;
-            var extra = this.StatDesc.ExtraBits;
-            var base_Renamed = this.StatDesc.ExtraBase;
-            var max_length = this.StatDesc.MaxLength;
+            var stree = this.StatDesc.StaticTreeOption switch
+            {
+                0 => StaticTree.StaticLtree,
+                1 => StaticTree.StaticDtree,
+                2 or _ => null,
+            };
+            var extra = this.StatDesc.ExtraBitOption switch
+            {
+                0 => ExtraLbits,
+                1 => ExtraDbits,
+                2 or _ => ExtraBlbits,
+            };
+            var baseRenamed = this.StatDesc.ExtraBase;
+            var maxLength = this.StatDesc.MaxLength;
             int h; // heap index
-            int n, m; // iterate over the tree elements
+            int n; // iterate over the tree elements
             int bits; // bit length
-            int xbits; // extra bits
-            short f; // frequency
             var overflow = 0; // number of elements with bit length too large
-            for (bits = 0; bits <= MAXBITS; bits++)
+            for (bits = 0; bits <= 15; bits++)
             {
                 s.BlCount[bits] = 0;
             }
@@ -218,13 +199,13 @@ namespace Elskom.Generic.Libs
             // In a first pass, compute the optimal bit lengths (which may
             // overflow in the case of the bit length tree).
             tree[(s.Heap[s.HeapMax] * 2) + 1] = 0; // root of the heap
-            for (h = s.HeapMax + 1; h < HEAPSIZE; h++)
+            for (h = s.HeapMax + 1; h < 573; h++)
             {
                 n = s.Heap[h];
                 bits = tree[(tree[(n * 2) + 1] * 2) + 1] + 1;
-                if (bits > max_length)
+                if (bits > maxLength)
                 {
-                    bits = max_length;
+                    bits = maxLength;
                     overflow++;
                 }
 
@@ -237,13 +218,13 @@ namespace Elskom.Generic.Libs
                 }
 
                 s.BlCount[bits]++;
-                xbits = 0;
-                if (n >= base_Renamed)
+                var xbits = 0; // extra bits
+                if (n >= baseRenamed)
                 {
-                    xbits = extra[n - base_Renamed];
+                    xbits = extra[n - baseRenamed];
                 }
 
-                f = tree[n * 2];
+                var f = tree[n * 2]; // frequency
                 s.OptLen += f * (bits + xbits);
                 if (stree != null)
                 {
@@ -260,7 +241,7 @@ namespace Elskom.Generic.Libs
             // Find the first bit length which could increase:
             do
             {
-                bits = max_length - 1;
+                bits = maxLength - 1;
                 while (s.BlCount[bits] == 0)
                 {
                     bits--;
@@ -268,7 +249,7 @@ namespace Elskom.Generic.Libs
 
                 s.BlCount[bits]--; // move one leaf down the tree
                 s.BlCount[bits + 1] = (short)(s.BlCount[bits + 1] + 2); // move one overflow item as its brother
-                s.BlCount[max_length]--;
+                s.BlCount[maxLength]--;
 
                 // The brother of the overflow item also moves one step up,
                 // but this does not affect bl_count[max_length]
@@ -276,12 +257,12 @@ namespace Elskom.Generic.Libs
             }
             while (overflow > 0);
 
-            for (bits = max_length; bits != 0; bits--)
+            for (bits = maxLength; bits != 0; bits--)
             {
                 n = s.BlCount[bits];
                 while (n != 0)
                 {
-                    m = s.Heap[--h];
+                    var m = s.Heap[--h]; // iterate over the tree elements
                     if (m > this.MaxCode)
                     {
                         continue;
@@ -307,22 +288,27 @@ namespace Elskom.Generic.Libs
         internal void Build_tree(Deflate s)
         {
             var tree = this.DynTree;
-            var stree = this.StatDesc.StaticTreeValue;
+            var stree = this.StatDesc.StaticTreeOption switch
+            {
+                0 => StaticTree.StaticLtree,
+                1 => StaticTree.StaticDtree,
+                2 or _ => null,
+            };
             var elems = this.StatDesc.Elems;
-            int n, m; // iterate over heap elements
-            var max_code = -1; // largest code with non zero frequency
+            int n; // iterate over heap elements
+            var maxCode = -1; // largest code with non zero frequency
             int node; // new node being created
 
             // Construct the initial heap, with least frequent element in
             // heap[1]. The sons of heap[n] are heap[2*n] and heap[2*n+1].
             // heap[0] is not used.
             s.HeapLen = 0;
-            s.HeapMax = HEAPSIZE;
+            s.HeapMax = 573;
             for (n = 0; n < elems; n++)
             {
                 if (tree[n * 2] != 0)
                 {
-                    s.Heap[++s.HeapLen] = max_code = n;
+                    s.Heap[++s.HeapLen] = maxCode = n;
                     s.Depth[n] = 0;
                 }
                 else
@@ -337,7 +323,7 @@ namespace Elskom.Generic.Libs
             // two codes of non zero frequency.
             while (s.HeapLen < 2)
             {
-                node = s.Heap[++s.HeapLen] = max_code < 2 ? ++max_code : 0;
+                node = s.Heap[++s.HeapLen] = maxCode < 2 ? ++maxCode : 0;
                 tree[node * 2] = 1;
                 s.Depth[node] = 0;
                 s.OptLen--;
@@ -349,7 +335,7 @@ namespace Elskom.Generic.Libs
                 // node is 0 or 1 so it does not have extra bits
             }
 
-            this.MaxCode = max_code;
+            this.MaxCode = maxCode;
 
             // The elements heap[heap_len/2+1 .. heap_len] are leaves of the tree,
             // establish sub-heaps of increasing lengths:
@@ -367,13 +353,13 @@ namespace Elskom.Generic.Libs
                 n = s.Heap[1];
                 s.Heap[1] = s.Heap[s.HeapLen--];
                 s.Pqdownheap(tree, 1);
-                m = s.Heap[1]; // m = node of next least frequency
+                var m = s.Heap[1]; // iterate over heap elements
                 s.Heap[--s.HeapMax] = n; // keep the nodes sorted by frequency
                 s.Heap[--s.HeapMax] = m;
 
                 // Create a new node father of n and m
                 tree[node * 2] = (short)(tree[n * 2] + tree[m * 2]);
-                s.Depth[node] = (byte)(System.Math.Max(s.Depth[n], s.Depth[m]) + 1);
+                s.Depth[node] = (byte)(Math.Max(s.Depth[n], s.Depth[m]) + 1);
                 tree[(n * 2) + 1] = tree[(m * 2) + 1] = (short)node;
 
                 // and insert the new node in the heap
@@ -389,7 +375,7 @@ namespace Elskom.Generic.Libs
             this.Gen_bitlen(s);
 
             // The field len is now set, we can generate the bit codes
-            Gen_codes(tree, max_code, s.BlCount);
+            Gen_codes(tree, maxCode, s.BlCount);
         }
     }
 }

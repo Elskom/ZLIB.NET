@@ -7,14 +7,14 @@ namespace Elskom.Generic.Libs
 {
     internal enum ZlibCompressionState
     {
-        ZVERSIONERROR = -6,
-        ZBUFERROR,
-        ZMEMERROR,
-        ZDATAERROR,
-        ZSTREAMERROR,
-        ZERRNO,
-        ZOK,
-        ZSTREAMEND,
-        ZNEEDDICT,
+        VersionError = -6,
+        BufError,
+        MemError,
+        DataError,
+        StreamError,
+        Errno,
+        Ok,
+        StreamEnd,
+        NeedDict,
     }
 }

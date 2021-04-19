@@ -9,13 +9,7 @@ namespace Elskom.Generic.Libs
 
     internal static class InfTree
     {
-        internal const int FixedBl = 9;
-        internal const int FixedBd = 5;
-
-        // If BMAX needs to be larger than 16, then h and x[] should be uLong.
-        internal const int BMAX = 15; // maximum bit length of any code
-
-        internal static readonly int[] FixedTl = new[]
+        internal static readonly int[] FixedTl =
         {
             96, 7, 256, 0, 8, 80, 0, 8, 16, 84, 8, 115, 82, 7, 31, 0, 8, 112, 0, 8,
             48, 0, 9, 192, 80, 7, 10, 0, 8, 96, 0, 8, 32, 0, 9, 160, 0, 8, 0, 0, 8,
@@ -88,7 +82,7 @@ namespace Elskom.Generic.Libs
             143, 0, 8, 79, 0, 9, 255,
         };
 
-        internal static readonly int[] FixedTd = new[]
+        internal static readonly int[] FixedTd =
         {
             80, 5, 1, 87, 5, 257, 83, 5, 17, 91, 5, 4097, 81, 5, 5, 89, 5, 1025, 85, 5, 65,
             93, 5, 16385, 80, 5, 3, 88, 5, 513, 84, 5, 33, 92, 5, 8193, 82, 5, 9, 90, 5,
@@ -98,31 +92,29 @@ namespace Elskom.Generic.Libs
         };
 
         // Tables for deflate from PKZIP's appnote.txt.
-        internal static readonly int[] Cplens = new[]
+        internal static readonly int[] Cplens =
         {
             3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83,
             99, 115, 131, 163, 195, 227, 258, 0, 0,
         };
 
-        internal static readonly int[] Cplext = new[]
+        internal static readonly int[] Cplext =
         {
             0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5,
             5, 0, 112, 112,
         };
 
-        internal static readonly int[] Cpdist = new[]
+        internal static readonly int[] Cpdist =
         {
             1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769,
             1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577,
         };
 
-        internal static readonly int[] Cpdext = new[]
+        internal static readonly int[] Cpdext =
         {
             0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11,
             11, 12, 12, 13, 13,
         };
-
-        private const int MANY = 1440;
 
         internal static ZlibCompressionState Huft_build(int[] b, int bindex, int n, int s, int[] d, int[] e, int[] t, int[] m, int[] hp, int[] hn, int[] v)
         {
@@ -131,34 +123,21 @@ namespace Elskom.Generic.Libs
             // if the given code set is incomplete (the tables are still built in this
             // case), Z_DATA_ERROR if the input is invalid (an over-subscribed set of
             // lengths), or Z_MEM_ERROR if not enough memory.
-            int a; // counter for codes of length k
-            var c = new int[BMAX + 1]; // bit length count table
-            int f; // i repeats in table every f entries
-            int g; // maximum code length
-            int h; // table level
-            int i; // counter, current code
+            var c = new int[16]; // bit length count table
             int j; // counter
-            int k; // number of bits in current code
-            int l; // bits per table (returned in m)
-            int mask; // (1 << w) - 1, to avoid cc -O bug on HP
-            int p; // pointer into c[], b[], or v[]
-            int q; // points to current table
             var r = new int[3]; // table entry for structure assignment
-            var u = new int[BMAX]; // table stack
-            int w; // bits before this table == (l * h)
-            var x = new int[BMAX + 1]; // bit offsets, then code stack
-            int xp; // pointer into x
+            var u = new int[15]; // table stack
+            var x = new int[16]; // bit offsets, then code stack
             int y; // number of dummy codes added
-            int z; // number of entries in current table
 
             // Generate counts for each bit length
-            p = 0;
-            i = n;
+            var p = 0;
+            var i = n;
             do
             {
                 c[b[bindex + p]]++;
                 p++;
-                i--; // assume all entries <= BMAX
+                i--; // assume all entries <= 15
             }
             while (i != 0);
 
@@ -167,12 +146,12 @@ namespace Elskom.Generic.Libs
                 // null input--all zero length codes
                 t[0] = -1;
                 m[0] = 0;
-                return ZlibCompressionState.ZOK;
+                return ZlibCompressionState.Ok;
             }
 
             // Find minimum and maximum length, bound *m by those
-            l = m[0];
-            for (j = 1; j <= BMAX; j++)
+            var l = m[0];
+            for (j = 1; j <= 15; j++)
             {
                 if (c[j] != 0)
                 {
@@ -180,13 +159,13 @@ namespace Elskom.Generic.Libs
                 }
             }
 
-            k = j; // minimum code length
+            var k = j;
             if (l < j)
             {
                 l = j;
             }
 
-            for (i = BMAX; i != 0; i--)
+            for (i = 15; i != 0; i--)
             {
                 if (c[i] != 0)
                 {
@@ -194,7 +173,7 @@ namespace Elskom.Generic.Libs
                 }
             }
 
-            g = i; // maximum code length
+            var g = i;
             if (l > i)
             {
                 l = i;
@@ -207,13 +186,13 @@ namespace Elskom.Generic.Libs
             {
                 if ((y -= c[j]) < 0)
                 {
-                    return ZlibCompressionState.ZDATAERROR;
+                    return ZlibCompressionState.DataError;
                 }
             }
 
             if ((y -= c[i]) < 0)
             {
-                return ZlibCompressionState.ZDATAERROR;
+                return ZlibCompressionState.DataError;
             }
 
             c[i] += y;
@@ -221,7 +200,7 @@ namespace Elskom.Generic.Libs
             // Generate starting offsets into the value table for each length
             x[1] = j = 0;
             p = 1;
-            xp = 2;
+            var xp = 2;
             while (--i != 0)
             {
                 // note that i == g from above
@@ -248,20 +227,21 @@ namespace Elskom.Generic.Libs
             // Generate the Huffman codes and for each, make the table entries
             x[0] = i = 0; // first Huffman code is zero
             p = 0; // grab values in bit order
-            h = -1; // no tables yet--level -1
-            w = -l; // bits decoded == (l * h)
+            var h = -1;
+            var w = -l;
             u[0] = 0; // just to keep compilers happy
-            q = 0; // ditto
-            z = 0; // ditto
+            var q = 0;
+            var z = 0;
 
             // go through the bit lengths (k already is bits in shortest code)
             for (; k <= g; k++)
             {
-                a = c[k];
+                var a = c[k]; // counter for codes of length k
                 while (a-- != 0)
                 {
                     // here i is the Huffman code of length k bits for value *p
                     // make tables up to required level
+                    int f; // i repeats in table every f entries
                     while (k > w + l)
                     {
                         h++;
@@ -296,10 +276,10 @@ namespace Elskom.Generic.Libs
                         z = 1 << j; // table entries for j-bit table
 
                         // allocate new table
-                        if (hn[0] + z > MANY)
+                        if (hn[0] + z > 1440)
                         {
                             // (note: doesn't matter for fixed)
-                            return ZlibCompressionState.ZDATAERROR; // overflow of MANY
+                            return ZlibCompressionState.DataError; // overflow of MANY
                         }
 
                         u[h] = q = hn[0]; // DEBUG
@@ -346,7 +326,7 @@ namespace Elskom.Generic.Libs
                     }
 
                     // backwards increment the k-bit code i
-                    for (j = 1 << (k - 1); (i & j) != 0; j = j >= 0 ? j >> 1 : (j >> 1) + (2 << ~1))
+                    for (j = 1 << (k - 1); (i & j) != 0; j = j >= 0 ? j >> 1 : (j >> 1) + -2147483648)
                     {
                         i ^= j;
                     }
@@ -354,7 +334,7 @@ namespace Elskom.Generic.Libs
                     i ^= j;
 
                     // backup over finished tables
-                    mask = (1 << w) - 1; // needed on HP, cc -O bug
+                    var mask = (1 << w) - 1; // (1 << w) - 1, to avoid cc -O bug on HP
                     while ((i & mask) != x[h])
                     {
                         h--; // don't need to update q
@@ -365,23 +345,22 @@ namespace Elskom.Generic.Libs
             }
 
             // Return Z_BUF_ERROR if we were given an incomplete table
-            return y != 0 && g != 1 ? ZlibCompressionState.ZBUFERROR : ZlibCompressionState.ZOK;
+            return y != 0 && g != 1 ? ZlibCompressionState.BufError : ZlibCompressionState.Ok;
         }
 
         internal static ZlibCompressionState Inflate_trees_bits(int[] c, int[] bb, int[] tb, int[] hp, ZlibStream z)
         {
-            ZlibCompressionState r;
             var hn = new int[1]; // hufts used in space
             var v = new int[19]; // work area for huft_build
-            r = Huft_build(c, 0, 19, 19, null, null, tb, bb, hp, hn, v);
-            if (r == ZlibCompressionState.ZDATAERROR)
+            var r = Huft_build(c, 0, 19, 19, null, null, tb, bb, hp, hn, v);
+            if (r == ZlibCompressionState.DataError)
             {
                 z.Msg = "oversubscribed dynamic bit lengths tree";
             }
-            else if (r == ZlibCompressionState.ZBUFERROR || bb[0] == 0)
+            else if (r == ZlibCompressionState.BufError || bb[0] == 0)
             {
                 z.Msg = "incomplete dynamic bit lengths tree";
-                r = ZlibCompressionState.ZDATAERROR;
+                r = ZlibCompressionState.DataError;
             }
 
             return r;
@@ -389,22 +368,21 @@ namespace Elskom.Generic.Libs
 
         internal static ZlibCompressionState Inflate_trees_dynamic(int nl, int nd, int[] c, int[] bl, int[] bd, int[] tl, int[] td, int[] hp, ZlibStream z)
         {
-            ZlibCompressionState r;
             var hn = new int[1]; // hufts used in space
             var v = new int[288]; // work area for huft_build
 
             // build literal/length tree
-            r = Huft_build(c, 0, nl, 257, Cplens, Cplext, tl, bl, hp, hn, v);
-            if (r != ZlibCompressionState.ZOK || bl[0] == 0)
+            var r = Huft_build(c, 0, nl, 257, Cplens, Cplext, tl, bl, hp, hn, v);
+            if (r != ZlibCompressionState.Ok || bl[0] == 0)
             {
-                if (r == ZlibCompressionState.ZDATAERROR)
+                if (r == ZlibCompressionState.DataError)
                 {
                     z.Msg = "oversubscribed literal/length tree";
                 }
-                else if (r != ZlibCompressionState.ZMEMERROR)
+                else if (r != ZlibCompressionState.MemError)
                 {
                     z.Msg = "incomplete literal/length tree";
-                    r = ZlibCompressionState.ZDATAERROR;
+                    r = ZlibCompressionState.DataError;
                 }
 
                 return r;
@@ -412,36 +390,36 @@ namespace Elskom.Generic.Libs
 
             // build distance tree
             r = Huft_build(c, nl, nd, 0, Cpdist, Cpdext, td, bd, hp, hn, v);
-            if (r != ZlibCompressionState.ZOK || (bd[0] == 0 && nl > 257))
+            if (r != ZlibCompressionState.Ok || (bd[0] == 0 && nl > 257))
             {
-                if (r == ZlibCompressionState.ZDATAERROR)
+                if (r == ZlibCompressionState.DataError)
                 {
                     z.Msg = "oversubscribed distance tree";
                 }
-                else if (r == ZlibCompressionState.ZBUFERROR)
+                else if (r == ZlibCompressionState.BufError)
                 {
                     z.Msg = "incomplete distance tree";
-                    r = ZlibCompressionState.ZDATAERROR;
+                    r = ZlibCompressionState.DataError;
                 }
-                else if (r != ZlibCompressionState.ZMEMERROR)
+                else if (r != ZlibCompressionState.MemError)
                 {
                     z.Msg = "empty distance tree with lengths";
-                    r = ZlibCompressionState.ZDATAERROR;
+                    r = ZlibCompressionState.DataError;
                 }
 
                 return r;
             }
 
-            return ZlibCompressionState.ZOK;
+            return ZlibCompressionState.Ok;
         }
 
         internal static ZlibCompressionState Inflate_trees_fixed(int[] bl, int[] bd, int[][] tl, int[][] td)
         {
-            bl[0] = FixedBl;
-            bd[0] = FixedBd;
+            bl[0] = 9;
+            bd[0] = 5;
             tl[0] = FixedTl;
             td[0] = FixedTd;
-            return ZlibCompressionState.ZOK;
+            return ZlibCompressionState.Ok;
         }
     }
 }

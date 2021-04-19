@@ -24,7 +24,7 @@ namespace Elskom.Generic.Libs
         /// The compressed data.
         /// </returns>
         public static byte[] Compress(byte[] inData)
-            => Compress(inData, ZlibCompression.ZDEFAULTCOMPRESSION);
+            => Compress(inData, ZlibCompression.DefaultCompression);
 
         /// <summary>
         /// Compresses a file using the default compression level.
@@ -37,7 +37,7 @@ namespace Elskom.Generic.Libs
         /// The compressed data.
         /// </returns>
         public static byte[] Compress(string path)
-            => Compress(path, ZlibCompression.ZDEFAULTCOMPRESSION);
+            => Compress(path, ZlibCompression.DefaultCompression);
 
         /// <summary>
         /// Compresses data using an specific compression level.
@@ -80,7 +80,7 @@ namespace Elskom.Generic.Libs
         /// A <see cref="ValueTuple"/> containing the compressed data, as well as the adler32 hash of that data.
         /// </returns>
         public static (byte[] OutData, uint Adler32) CompressHash(byte[] inData)
-            => CompressHash(inData, ZlibCompression.ZDEFAULTCOMPRESSION);
+            => CompressHash(inData, ZlibCompression.DefaultCompression);
 
         /// <summary>
         /// Compresses a file using the default compression level and outputs an adler32 hash with the data.
@@ -93,7 +93,7 @@ namespace Elskom.Generic.Libs
         /// A <see cref="ValueTuple"/> containing the compressed data, as well as the adler32 hash of that data.
         /// </returns>
         public static (byte[] OutData, uint Adler32) CompressHash(string path)
-            => CompressHash(File.ReadAllBytes(path), ZlibCompression.ZDEFAULTCOMPRESSION);
+            => CompressHash(File.ReadAllBytes(path), ZlibCompression.DefaultCompression);
 
         /// <summary>
         /// Compresses data using an specific compression level and outputs an adler32 hash with the data.
@@ -111,9 +111,9 @@ namespace Elskom.Generic.Libs
         {
             try
             {
-                using var tmpStrm = new MemoryStream(inData);
+                using var tmpStream = new MemoryStream(inData);
                 using var outZStream = new ZlibStream(outStream, level, true);
-                tmpStrm.CopyTo(outZStream);
+                tmpStream.CopyTo(outZStream);
                 outZStream.Flush();
                 outZStream.Finish();
                 return (uint)(outZStream.GetAdler32() & 0xffff);
@@ -181,7 +181,7 @@ namespace Elskom.Generic.Libs
         {
             try
             {
-                using var outZStream = new ZlibStream(inData);
+                using var outZStream = new ZlibStream(new MemoryStream(inData));
                 outZStream.CopyTo(outStream);
                 outZStream.Flush();
                 outZStream.Finish();
@@ -248,10 +248,15 @@ namespace Elskom.Generic.Libs
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            var data = new byte[2];
-            _ = stream.Read(data, 0, 2);
+            var byte1 = stream.ReadByte();
+            var byte2 = stream.ReadByte();
+            if (byte1 is -1 || byte2 is -1)
+            {
+                return false;
+            }
+
             _ = stream.Seek(-2, SeekOrigin.Current);
-            return IsCompressedByZlib(data);
+            return (byte)byte1 is 0x78 && (byte)byte2 is 0x01 or 0x5E or 0x9C or 0xDA;
         }
 
         /// <summary>
@@ -272,7 +277,7 @@ namespace Elskom.Generic.Libs
         public static bool IsCompressedByZlib(byte[] data)
             => data == null
             ? throw new ArgumentNullException(nameof(data))
-            : data.Length >= 2 && data[0] == 0x78 && (data[1] == 0x01 || data[1] == 0x5E || data[1] == 0x9C || data[1] == 0xDA);
+            : data.Length >= 2 && data[0] is 0x78 && data[1] is 0x01 or 0x5E or 0x9C or 0xDA;
 
         // NEW: Zlib version check.
 

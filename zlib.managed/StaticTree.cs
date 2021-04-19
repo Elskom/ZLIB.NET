@@ -5,9 +5,26 @@
 
 namespace Elskom.Generic.Libs
 {
+    using System;
+
     internal sealed class StaticTree
     {
-        internal static readonly short[] StaticLtree = new short[]
+        internal static readonly StaticTree StaticLDesc = new(0, 0, 257, 286, 15);
+
+        internal static readonly StaticTree StaticDDesc = new(1, 1, 0, 30, 15);
+
+        internal static readonly StaticTree StaticBlDesc = new(2, 2, 0, 19, 7);
+
+        internal StaticTree(int staticTreeOption, int extraBitOption, int extraBase, int elems, int maxLength)
+        {
+            this.StaticTreeOption = staticTreeOption;
+            this.ExtraBitOption = extraBitOption;
+            this.ExtraBase = extraBase;
+            this.Elems = elems;
+            this.MaxLength = maxLength;
+        }
+
+        internal static ReadOnlySpan<short> StaticLtree => new short[]
         {
             12, 8, 140, 8, 76, 8, 204, 8, 44, 8, 172, 8, 108, 8, 236, 8, 28, 8, 156, 8, 92,
             8, 220, 8, 60, 8, 188, 8, 124, 8, 252, 8, 2, 8, 130, 8, 66, 8, 194, 8, 34, 8,
@@ -39,54 +56,21 @@ namespace Elskom.Generic.Libs
             195, 8, 35, 8, 163, 8, 99, 8, 227, 8,
         };
 
-        internal static readonly short[] StaticDtree = new short[]
+        internal static ReadOnlySpan<short> StaticDtree => new short[]
         {
             0, 5, 16, 5, 8, 5, 24, 5, 4, 5, 20, 5, 12, 5, 28, 5, 2, 5, 18, 5, 10, 5, 26,
             5, 6, 5, 22, 5, 14, 5, 30, 5, 1, 5, 17, 5, 9, 5, 25, 5, 5, 5, 21, 5, 13, 5,
             29, 5, 3, 5, 19, 5, 11, 5, 27, 5, 7, 5, 23, 5,
         };
 
-        internal static readonly StaticTree StaticLDesc = new(StaticLtree, Tree.ExtraLbits, LITERALS + 1, LCODES, MAXBITS);
+        internal int StaticTreeOption { get; }
 
-        internal static readonly StaticTree StaticDDesc = new(StaticDtree, Tree.ExtraDbits, 0, DCODES, MAXBITS);
+        internal int ExtraBitOption { get; }
 
-        internal static readonly StaticTree StaticBlDesc = new(null, Tree.ExtraBlbits, 0, BLCODES, MAXBLBITS);
+        internal int ExtraBase { get; } // base index for extra_bits
 
-        private const int MAXBITS = 15;
-        private const int BLCODES = 19;
-        private const int DCODES = 30;
-        private const int LITERALS = 256;
-        private const int LENGTHCODES = 29;
+        internal int Elems { get; } // max number of elements in the tree
 
-        // Bit length codes must not exceed MAX_BL_BITS bits
-        private const int MAXBLBITS = 7;
-        private const int LCODES = LITERALS + 1 + LENGTHCODES;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StaticTree"/> class.
-        /// </summary>
-        /// <param name="static_tree">static tree.</param>
-        /// <param name="extra_bits">extra bits.</param>
-        /// <param name="extra_base">extra base.</param>
-        /// <param name="elems">elements?.</param>
-        /// <param name="max_length">max length.</param>
-        internal StaticTree(short[] static_tree, int[] extra_bits, int extra_base, int elems, int max_length)
-        {
-            this.StaticTreeValue = static_tree;
-            this.ExtraBits = extra_bits;
-            this.ExtraBase = extra_base;
-            this.Elems = elems;
-            this.MaxLength = max_length;
-        }
-
-        internal short[] StaticTreeValue { get; private set; } // static tree or null
-
-        internal int[] ExtraBits { get; private set; } // extra bits for each code or null
-
-        internal int ExtraBase { get; private set; } // base index for extra_bits
-
-        internal int Elems { get; private set; } // max number of elements in the tree
-
-        internal int MaxLength { get; private set; } // max bit length for the codes
+        internal int MaxLength { get; } // max bit length for the codes
     }
 }

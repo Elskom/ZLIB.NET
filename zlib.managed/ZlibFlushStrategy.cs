@@ -7,10 +7,10 @@ namespace Elskom.Generic.Libs
 {
     internal enum ZlibFlushStrategy
     {
-        ZNOFLUSH,
-        ZPARTIALFLUSH,
-        ZSYNCFLUSH,
-        ZFULLFLUSH,
-        ZFINISH,
+        NoFlush,
+        PartialFlush,
+        SyncFlush,
+        FullFlush,
+        Finish,
     }
 }
