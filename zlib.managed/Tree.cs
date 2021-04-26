@@ -135,7 +135,7 @@ namespace Elskom.Generic.Libs
             for (n = 0; n <= maxCode; n++)
             {
                 int len = tree[(n * 2) + 1];
-                if (len == 0)
+                if (len is 0)
                 {
                     continue;
                 }
@@ -232,7 +232,7 @@ namespace Elskom.Generic.Libs
                 }
             }
 
-            if (overflow == 0)
+            if (overflow is 0)
             {
                 return;
             }
@@ -242,7 +242,7 @@ namespace Elskom.Generic.Libs
             do
             {
                 bits = maxLength - 1;
-                while (s.BlCount[bits] == 0)
+                while (s.BlCount[bits] is 0)
                 {
                     bits--;
                 }
@@ -257,7 +257,7 @@ namespace Elskom.Generic.Libs
             }
             while (overflow > 0);
 
-            for (bits = maxLength; bits != 0; bits--)
+            for (bits = maxLength; bits is not 0; bits--)
             {
                 n = s.BlCount[bits];
                 while (n != 0)
@@ -306,7 +306,7 @@ namespace Elskom.Generic.Libs
             s.HeapMax = 573;
             for (n = 0; n < elems; n++)
             {
-                if (tree[n * 2] != 0)
+                if (tree[n * 2] is not 0)
                 {
                     s.Heap[++s.HeapLen] = maxCode = n;
                     s.Depth[n] = 0;

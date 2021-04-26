@@ -553,7 +553,7 @@ namespace Elskom.Generic.Libs
 
                 count = 0;
                 prevlen = curlen;
-                maxCount = nextlen is 0 ? 138 : curlen == nextlen ? 6 : 7;
+                maxCount = nextlen is 0 ? 138 : curlen.Equals(nextlen) ? 6 : 7;
                 minCount = nextlen is 0 || curlen == nextlen ? 3 : 4;
             }
         }
@@ -579,7 +579,7 @@ namespace Elskom.Generic.Libs
             // 3 but the actual value used is 4.)
             for (maxBlindex = 18; maxBlindex >= 3; maxBlindex--)
             {
-                if (this.BlTree[(Tree.BlOrder[maxBlindex] * 2) + 1] != 0)
+                if (this.BlTree[(Tree.BlOrder[maxBlindex] * 2) + 1] is not 0)
                 {
                     break;
                 }
@@ -638,7 +638,7 @@ namespace Elskom.Generic.Libs
                     {
                         this.Send_code(curlen, this.BlTree);
                     }
-                    while (--count != 0);
+                    while (--count is not 0);
                 }
                 else if (curlen != 0)
                 {
@@ -664,7 +664,7 @@ namespace Elskom.Generic.Libs
 
                 count = 0;
                 prevlen = curlen;
-                maxCount = nextlen is 0 ? 138 : curlen == nextlen ? 6 : 7;
+                maxCount = nextlen is 0 ? 138 : curlen.Equals(nextlen) ? 6 : 7;
                 minCount = nextlen is 0 || curlen == nextlen ? 3 : 4;
             }
         }
@@ -765,7 +765,7 @@ namespace Elskom.Generic.Libs
                 this.DynDtree[Tree.D_code(dist) * 2]++;
             }
 
-            if ((this.LastLit & 0x1fff) == 0 && this.Level > ZlibCompression.Level2)
+            if ((this.LastLit & 0x1fff) is 0 && this.Level > ZlibCompression.Level2)
             {
                 // Compute an upper bound for the compressed length
                 var outLength = this.LastLit * 8;
@@ -1014,7 +1014,7 @@ namespace Elskom.Generic.Libs
             if (this.Level > 0)
             {
                 // Check if the file is ascii or binary
-                if (this.DataType == 2)
+                if (this.DataType is 2)
                 {
                     this.Set_data_type();
                 }
@@ -1043,7 +1043,7 @@ namespace Elskom.Generic.Libs
                 optLenb = staticLenb = storedLen + 5; // force a stored block
             }
 
-            if (storedLen + 4 <= optLenb && buf != -1)
+            if (storedLen + 4 <= optLenb && buf is not -1)
             {
                 // 4: two words for the lengths
                 // The test buf != NULL is only necessary if LIT_BUFSIZE > WSIZE.
@@ -1092,7 +1092,7 @@ namespace Elskom.Generic.Libs
                 int n;
                 switch (more)
                 {
-                    case 0 when this.Strstart == 0 && this.Lookahead == 0:
+                    case 0 when this.Strstart is 0 && this.Lookahead is 0:
                         more = this.WSize;
                         break;
 
@@ -1146,7 +1146,7 @@ namespace Elskom.Generic.Libs
                     }
                 }
 
-                if (this.Strm.AvailIn == 0)
+                if (this.Strm.AvailIn is 0)
                 {
                     return;
                 }
@@ -1250,7 +1250,7 @@ namespace Elskom.Generic.Libs
                             // strstart never exceeds WSIZE-MAX_MATCH, so there are
                             // always MIN_MATCH bytes ahead.
                         }
-                        while (--this.MatchLength != 0);
+                        while (--this.MatchLength is not 0);
                         this.Strstart++;
                     }
                     else
@@ -1374,14 +1374,14 @@ namespace Elskom.Generic.Libs
                             this.Head[this.InsH] = (short)this.Strstart;
                         }
                     }
-                    while (--this.PrevLength != 0);
+                    while (--this.PrevLength is not 0);
                     this.MatchAvailable = 0;
                     this.MatchLength = 2;
                     this.Strstart++;
                     if (bflush)
                     {
                         this.Flush_block_only(false);
-                        if (this.Strm.AvailOut == 0)
+                        if (this.Strm.AvailOut is 0)
                         {
                             return 0;
                         }
@@ -1516,7 +1516,7 @@ namespace Elskom.Generic.Libs
                 windowBits = -windowBits;
             }
 
-            if (memLevel < 1 || memLevel > 9 || method is not 8 || windowBits < 9 || windowBits > 15 || level < ZlibCompression.NoCompression || level > ZlibCompression.BestCompression || strategy < ZlibCompressionStrategy.DefaultStrategy || strategy > ZlibCompressionStrategy.HuffmanOnly)
+            if (memLevel is < 1 or > 9 || method is not 8 || windowBits is < 9 or > 15 || level is < ZlibCompression.NoCompression or > ZlibCompression.BestCompression || strategy is < ZlibCompressionStrategy.DefaultStrategy or > ZlibCompressionStrategy.HuffmanOnly)
             {
                 return ZlibCompressionState.StreamError;
             }
