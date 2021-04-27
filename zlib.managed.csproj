@@ -1,7 +1,6 @@
 ﻿<Project Sdk="PublishRefAssemblies.Sdk/1.0.3">
 
   <PropertyGroup>
-    <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>zlib.managed</AssemblyName>
     <LangVersion>latest</LangVersion>
