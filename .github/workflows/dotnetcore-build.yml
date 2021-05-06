@@ -24,7 +24,7 @@ jobs:
         path: 'Sdk/zlib.managed'
     # this sadly has to match the parent repository.
     - name: .NET core build
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v1.8.0
       with:
         dotnet-version: 6.0.100-preview.3.21202.5
     - name: Restore
