@@ -49,7 +49,7 @@ jobs:
       if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]' || github.actor == 'AraHaan' || github.actor == 'CatGirlsAreLife' || github.actor == 'Raitou' || github.actor == 'JunichiSama' || github.actor == 'xioke' || github.actor == 'Elskom-gitsync'
       with:
         github-token: "${{ secrets.GITHUB_TOKEN }}"
-    - uses: actions-ecosystem/action-add-labels@v1
+    - uses: actions-ecosystem/action-add-labels@v1.1.2
       if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]' || github.actor == 'AraHaan' || github.actor == 'CatGirlsAreLife' || github.actor == 'Raitou' || github.actor == 'JunichiSama' || github.actor == 'xioke' || github.actor == 'Elskom-gitsync'
       with:
         github_token: ${{ secrets.GITSYNC_TOKEN }}
