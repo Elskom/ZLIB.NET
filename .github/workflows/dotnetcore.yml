@@ -19,13 +19,13 @@ jobs:
           automerge
 
     # clone the parent repository.
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2.3.4
       with:
         repository: 'Elskom/Sdk'
         ref: 'main'
         path: 'Sdk'
     # clone this one too.
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2.3.4
       with:
         path: 'Sdk/zlib.managed'
     # this sadly has to match the parent repository.
