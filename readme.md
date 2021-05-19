@@ -1,7 +1,7 @@
 # zlib.managed
 
 [![NuGet Badge](https://buildstats.info/nuget/zlib.managed?includePreReleases=true)](https://www.nuget.org/packages/zlib.managed/)
-![Build Status](https://github.com/Elskom/zlib.managed/workflows/.NET%20Core%20%28build%20%26%20publish%20pre-release%29/badge.svg)
+![Build Status](https://github.com/Elskom/zlib.managed/workflows/.NET%20Core%20%28build%29/badge.svg)
 ![Build Status](https://github.com/Elskom/zlib.managed/workflows/.NET%20Core%20%28build%20%26%20publish%20release%29/badge.svg)
 [![Github pulls-pending](https://img.shields.io/github/issues-search/Elskom/zlib.managed?label=pending%20pull%20requests&query=is%3Aopen+status%3Apending+is%3Apr&color=lightgray)](https://github.com/Elskom/zlib.managed/pulls?q=is%3Aopen+status%3Apending+is%3Apr)
 [![Github pulls-passing](https://img.shields.io/github/issues-search/Elskom/zlib.managed?label=passing%20pull%20requests&query=is%3Aopen+status%3Asuccess+is%3Apr&color=limegreen)](https://github.com/Elskom/zlib.managed/pulls?q=is%3Aopen+status%3Asuccess+is%3Apr)

@@ -14,39 +14,44 @@ jobs:
       DOTNET_NOLOGO: true
     steps:
     # clone the parent repository.
-    - uses: actions/checkout@v2.3.4
+    - uses: actions/checkout@main
       with:
         repository: 'Elskom/Sdk'
         ref: 'main'
         path: 'Sdk'
+
     # clone this one too.
-    - uses: actions/checkout@v2.3.4
+    - uses: actions/checkout@main
       with:
         path: 'Sdk/zlib.managed'
+
     # this sadly has to match the parent repository.
     - name: .NET core build
-      uses: actions/setup-dotnet@v1.8.0
+      uses: actions/setup-dotnet@main
       with:
-        dotnet-version: 6.0.100-preview.3.21202.5
+        dotnet-version: '6.0.x'
+        include-prerelease: true
+
     - name: Restore
       run: |
         cd Sdk/
         dotnet restore
       shell: bash
+
     - name: Build with dotnet
       run: |
         cd Sdk/
         dotnet build --configuration Release --no-restore
       shell: bash
 
-    # - name: Publish Release
-    #   id: publish_nuget
-    #   uses: rohith/publish-nuget@v2
-    #   with:
-    #     # Filepath of the project to be packaged, relative to root of repository
-    #     PROJECT_FILE_PATH: zlib.managed.csproj
-    #     # Flag to toggle git tagging, enabled by default
-    #     TAG_COMMIT: false
-    #     # API key to authenticate with NuGet server
-    #     NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-    #     INCLUDE_SYMBOLS: true
+    - name: Publish Release
+      id: publish_nuget
+      uses: brandedoutcast/publish-nuget@master
+      with:
+        # Filepath of the project to be packaged, relative to root of repository
+        PROJECT_FILE_PATH: Sdk/zlib.managed/zlib.managed.csproj
+        # Flag to toggle git tagging, enabled by default
+        TAG_COMMIT: false
+        # API key to authenticate with NuGet server
+        NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+        INCLUDE_SYMBOLS: false

@@ -2,16 +2,16 @@
 
 ## Supported Versions
 
-Any and all security updates are applied to the master branch, if they do not break the api,
+Any and all security updates are applied to the main branch, if they do not break the api,
 then the last number in the version would be increased. However if they do have a breaking change,
 the second number in the version will increase. Because of this, packages currently on nuget with
 the vulnerability will sadly stay like that unless the users update the package to resolve it.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| master branch   | :white_check_mark: |
-| 1.1.4   | :x:                |
-| < 1.1.4   | :x:                |
+| main branch | :white_check_mark: |
+| 1.1.4 | :x:                |
+| < 1.1.4 | :x:                |
 
 ## Reporting a Vulnerability
 
