@@ -32,26 +32,21 @@ jobs:
         dotnet-version: '6.0.x'
         include-prerelease: true
 
-    - name: Restore
-      run: |
-        cd Sdk/
-        dotnet restore
-      shell: bash
-
-    - name: Build with dotnet
-      run: |
-        cd Sdk/
-        dotnet build --configuration Release --no-restore
-      shell: bash
+    - name: Restore, Build, and pack
+      uses: Elskom/build-dotnet@main
+      with:
+        SOLUTION_FILE_PATH: Sdk/build_all_packages.sln
+        TEST: false
 
     - name: Publish Release
       id: publish_nuget
-      uses: brandedoutcast/publish-nuget@master
+      uses: Elskom/publish-nuget@main
       with:
         # Filepath of the project to be packaged, relative to root of repository
-        PROJECT_FILE_PATH: Sdk/zlib.managed/zlib.managed.csproj
+        PROJECT_FILE_PATH: '**/*.csproj'
+        # Path to store all generated nuget packages, relative to root of repository
+        PACKAGE_PATH: Sdk/artifacts/
         # Flag to toggle git tagging, enabled by default
         TAG_COMMIT: false
         # API key to authenticate with NuGet server
-        NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-        INCLUDE_SYMBOLS: false
+        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}

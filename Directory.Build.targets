@@ -1,0 +1,11 @@
+<Project>
+
+  <ItemGroup>
+    <None Remove=".gitignore" />
+    <None Include="LICENSE" Pack="true" Visible="false" PackagePath="" />
+    <None Remove="readme.md" />
+    <None Remove="stylecop.json" />
+    <AdditionalFiles Include="stylecop.json" />
+  </ItemGroup>
+
+</Project>

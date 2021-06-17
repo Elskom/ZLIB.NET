@@ -1,0 +1,9 @@
+<Project>
+
+  <ItemGroup>
+    <ProjectReference Include="../Common/Elskom.Common.csproj" />
+  </ItemGroup>
+
+  <Import Project="../Directory.Packages.props" />
+
+</Project>

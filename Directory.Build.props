@@ -1,0 +1,47 @@
+<Project>
+
+  <Import Project="../Directory.Build.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>zlib.managed</AssemblyName>
+    <PackageTags>zlib</PackageTags>
+    <RepositoryUrl>https://github.com/Elskom/zlib.managed/</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Elskom/zlib.managed/</PackageProjectUrl>
+    <PackageLicenseExpression></PackageLicenseExpression>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Description>A cleaned up and bug fixed version of zlib.net. This is also planned to be updated frequently if needed too.</Description>
+    <PackageReleaseNotes>Changes:
+      - Reduced TFM's on the package from 19 to 1.
+      - Embed the pdb inside of the binaries.
+      - Inflate, Deflate, ZlibCompressionState, ZlibCompressionStrategy, and ZlibFlushStrategy are now internal.
+      - Added ZlibVersion() and ZlibGetAdler32() to the MemoryZlib class.
+      - Removed deprecated methods inside of the MemoryZlib class.
+      - Removed the ZlibConst, ZStream and the SupportClass classes as they became useless.
+      - ZStreamException has been removed entirely, NotPackableException and NotUnpackableException makes it more clear if error happened during compressing or decompressing anyway.
+      - use simplified using statements instead of blocks in MemoryZlib since all the methods do is use the streams to do compression/decompression.
+      - Removed unused internal/private methods as well too (dead code).
+      - Removed ZImputStream and ZOutputStream and replacted it with ZlibStream.
+      - Added Compression levels 2 ~ 8 to ZlibCompression.
+      - Replaced output parameters on methods inside of the MemoryZlib class to return values.
+      - Renamed Compress methods that return an Adler32 hash to CompressHash.
+      - Removed parameterless constructor on NotPackableException and NotUnpackableException.</PackageReleaseNotes>
+    <Version>2.0.0</Version>
+    <NoWarn>$(NoWarn);NU5104;NU5118</NoWarn>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Elskom.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>false</DelaySign>
+    <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+    <!-- <IncludeSymbols>true</IncludeSymbols> -->
+    <!-- <IncludeBuildOutput>true</IncludeBuildOutput> -->
+    <!-- <SymbolPackageFormat>snupkg</SymbolPackageFormat> -->
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <GitBuildInfoAssemblyType>MemoryZlib</GitBuildInfoAssemblyType>
+  </PropertyGroup>
+
+</Project>

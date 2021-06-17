@@ -30,14 +30,9 @@ jobs:
         dotnet-version: '6.0.x'
         include-prerelease: true
 
-    - name: Restore
-      run: |
-        cd Sdk/
-        dotnet restore
-      shell: bash
-
-    - name: Build with dotnet
-      run: |
-        cd Sdk/
-        dotnet build --configuration Release --no-restore
-      shell: bash
+    - name: Restore and Build
+      uses: Elskom/build-dotnet@main
+      with:
+        SOLUTION_FILE_PATH: Sdk/build_all_packages.sln
+        TEST: false
+        PACK: false
