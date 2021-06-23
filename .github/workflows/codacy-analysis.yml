@@ -19,17 +19,7 @@ jobs:
     name: Codacy Security Scan
     runs-on: ubuntu-latest
     steps:
-      # clone the parent repository.
       - uses: actions/checkout@main
-        with:
-          repository: 'Elskom/Sdk'
-          ref: 'main'
-          path: 'Sdk'
-
-      # clone this one too.
-      - uses: actions/checkout@main
-        with:
-          path: 'Sdk/zlib.managed'
 
       - name: .NET core build
         uses: actions/setup-dotnet@main
@@ -38,9 +28,7 @@ jobs:
           include-prerelease: true
 
       - name: Restore
-        run: |
-          cd Sdk/
-          dotnet restore
+        run: dotnet restore
         shell: bash
 
       # Execute Codacy Analysis CLI and generate a SARIF output with the security issues identified during the analysis

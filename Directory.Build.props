@@ -1,14 +1,19 @@
 <Project>
 
-  <Import Project="../Directory.Build.props" />
-
   <PropertyGroup>
+    <!-- suppress message when using the .NET Preview SDKs. -->
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <LangVersion>latest</LangVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>zlib.managed</AssemblyName>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\artifacts\</PackageOutputPath>
+    <Company>Els_kom org.</Company>
+    <Authors>Els_kom org.</Authors>
+    <Copyright>Copyright (c) 2018-2021</Copyright>
+    <RepositoryType>git</RepositoryType>
     <PackageTags>zlib</PackageTags>
     <RepositoryUrl>https://github.com/Elskom/zlib.managed/</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Elskom/zlib.managed/</PackageProjectUrl>
-    <PackageLicenseExpression></PackageLicenseExpression>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>A cleaned up and bug fixed version of zlib.net. This is also planned to be updated frequently if needed too.</Description>
     <PackageReleaseNotes>Changes:
@@ -42,6 +47,18 @@
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <GitBuildInfoAssemblyType>MemoryZlib</GitBuildInfoAssemblyType>
+    <!--
+        Sorry, we have to disable the warning for adding the reference assemblies to the package without adding them to the nuspec.
+        This is because of the fact that if we use the methods to add them that does add them to the nuspec, then the folder paths
+        would be added automatically to the project which is not intended at all or even wanted. As such for now the only way to
+        fix that is to disable package analysis for now.
+    -->
+    <NoPackageAnalysis Condition="'$(PublishReferenceAssemblies)' == 'true'">true</NoPackageAnalysis>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>preview</AnalysisLevel>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
   </PropertyGroup>
 
 </Project>

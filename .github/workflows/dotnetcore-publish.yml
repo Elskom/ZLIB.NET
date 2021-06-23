@@ -13,17 +13,7 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: true
       DOTNET_NOLOGO: true
     steps:
-    # clone the parent repository.
     - uses: actions/checkout@main
-      with:
-        repository: 'Elskom/Sdk'
-        ref: 'main'
-        path: 'Sdk'
-
-    # clone this one too.
-    - uses: actions/checkout@main
-      with:
-        path: 'Sdk/zlib.managed'
 
     # this sadly has to match the parent repository.
     - name: .NET core build
@@ -35,7 +25,7 @@ jobs:
     - name: Restore, Build, and pack
       uses: Elskom/build-dotnet@main
       with:
-        SOLUTION_FILE_PATH: Sdk/build_all_packages.sln
+        SOLUTION_FILE_PATH: zlib.managed.sln
         TEST: false
 
     - name: Publish Release
