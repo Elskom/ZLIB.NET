@@ -1,7 +1,7 @@
 <Project>
 
   <ItemGroup>
-    <PackageReference Include="Elskom.GitInformation" IsImplicitlyDefined="true" Version="*-*" />
+    <PackageReference Include="Elskom.GitInformation" IsImplicitlyDefined="true" Version="-*" />
     <PackageReference Include="SonarAnalyzer.CSharp" IsImplicitlyDefined="true" Version="*-*">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
