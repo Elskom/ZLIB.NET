@@ -6,7 +6,8 @@
     <LangVersion>latest</LangVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>zlib.managed</AssemblyName>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)..\artifacts\</PackageOutputPath>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\</PackageOutputPath>
+    <PackageOutputPath Condition="'$(SolutionName)' == 'build_all_packages'">$(MSBuildThisFileDirectory)..\artifacts\</PackageOutputPath>
     <Company>Els_kom org.</Company>
     <Authors>Els_kom org.</Authors>
     <Copyright>Copyright (c) 2018-2021</Copyright>
