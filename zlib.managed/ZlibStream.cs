@@ -7,16 +7,17 @@ namespace Elskom.Generic.Libs
 {
     using System;
     using System.IO;
+    using IDisposableGenerator;
 
     /// <summary>
     /// Class that provides support for zlib compression/decompression for an input stream.
     /// This is an sealed class.
     /// </summary>
-    public sealed class ZlibStream : Stream
+    [GenerateDispose(true)]
+    public sealed partial class ZlibStream : Stream
     {
         private byte[] pBuf1;
         private byte[] pBuf;
-        private bool isDisposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ZlibStream"/> class for compression.
@@ -109,9 +110,8 @@ namespace Elskom.Generic.Libs
 
         internal ZlibFlushStrategy FlushMode { get; set; }
 
+        [DisposeField(true)]
         internal Stream BaseStream { get; set; }
-
-        internal bool KeepOpen { get; }
 
         internal long Adler { get; set; }
 
@@ -457,33 +457,21 @@ namespace Elskom.Generic.Libs
             return len;
         }
 
-        /// <inheritdoc/>
-        protected override void Dispose(bool disposing)
+        [CallOnDispose]
+        private void FinishAndEnd()
         {
-            if (!this.isDisposed && disposing)
+            try
             {
-                try
-                {
-                    this.Finish();
-                }
-                catch
-                {
-                    // should never throw.
-                }
-                finally
-                {
-                    this.EndStream();
-                }
-
-                if (!this.KeepOpen)
-                {
-                    this.BaseStream?.Dispose();
-                }
-
-                this.isDisposed = true;
+                this.Finish();
             }
-
-            base.Dispose(disposing);
+            catch
+            {
+                // should never throw.
+            }
+            finally
+            {
+                this.EndStream();
+            }
         }
 
         private void InitBlock()
