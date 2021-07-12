@@ -22,7 +22,7 @@
     <PackageReference Include="GitBuildInfo.SourceGenerator" IsImplicitlyDefined="true" Version="*-*">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="IDisposableGenerator" Version="*-*">
+    <PackageReference Include="IDisposableGenerator" Version="-*">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; compile; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
