@@ -12,16 +12,11 @@ jobs:
     steps:
     - uses: actions/checkout@main
 
-    # this sadly has to match the parent repository.
-    - name: .NET core build
-      uses: actions/setup-dotnet@main
-      with:
-        dotnet-version: '6.0.x'
-        include-prerelease: true
+    - name: Install latest .NET SDK
+      uses: Elskom/setup-latest-dotnet@main
 
     - name: Restore and Build
       uses: Elskom/build-dotnet@main
       with:
-        SOLUTION_FILE_PATH: zlib.managed.sln
         TEST: false
         PACK: false
